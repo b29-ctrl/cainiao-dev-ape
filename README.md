@@ -1,6 +1,6 @@
-﻿# 菜鸟开发猿 (Cainiao Dev Ape)
+# 菜鸟开发猿 (Cainiao Dev Ape)
 
-[![Version](https://img.shields.io/badge/version-4.64.0-blue.svg)](https://github.com/YOUR_USERNAME/cainiao-dev-ape/releases)
+[![Version](https://img.shields.io/badge/version-4.64.0-blue.svg)](https://github.com/b29-ctrl/cainiao-dev-ape/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **菜鸟开发猿**（原名 `dev-workflow-1n1n`）是一套 **「1 主理人 + N 小组队长 + N AI」** 的通用软件开发流程与工具集。它专为单人开发者或小团队设计，帮助你规范从需求立项、方案评审、代码构建到独立验收的全过程，避免 AI 协作过程中的混乱与返工。

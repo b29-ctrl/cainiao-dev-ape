@@ -59,7 +59,7 @@ if ($d -match 'data-check="([^"]+)"') { $matches[1] }
 - 断言写布尔或短字符串，结果拼一行便于贴进回报。
 - **测完删除临时页**，不要混进交付目录。
 
-**没有浏览器命令行时**：用 `C:\Users\Administrator\.dsh\skills\cainiao-dev-ape\02_工具\UI调试台.py`（技能包根下 `02_工具/`）打开效果图，手点主路径（开弹窗 → 勾门槛 → 提交 → 关闭），把结果写成"`popup=true | gate=true | closed=true`"，一样算通过——三查要的是"真的动过"。
+**没有浏览器命令行时**：用 `<skill-pack-root>/02_工具/UI调试台.py`（技能包根下 `02_工具/`）打开效果图，手点主路径（开弹窗 → 勾门槛 → 提交 → 关闭），把结果写成"`popup=true | gate=true | closed=true`"，一样算通过——三查要的是"真的动过"。
 
 ## 三查：截图核对
 

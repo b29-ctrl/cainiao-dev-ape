@@ -3,7 +3,7 @@ name: cainiao-dev-ape
 display-name: 菜鸟开发猿
 version: 4.64.0
 description: 一个人带多个 AI 做软件项目的通用开发流程。从需求问卷、产品功能说明书、任务拆分、效果图、风格冻结，到方案评审、代码构建、独立验收、发版，每一步谁做、做到什么算过都写死。带 6 个零依赖工具（调试台含网格量尺、S-1 勾选器、S4 冻结、门禁矩阵、任务书生成、问卷转说明书），以及方案图证据纪律与一页讲清模板、UI 交付六铁律与验收三查（v4.64）。触发词：立项 / 开工 / 走开发流程 / 方案图 / 做界面 / 验收自查。旧名 dev-workflow-1n1n 保留为检索别名。
-author: 主理人 + AI-C
+author: b29-ctrl
 tags: dev-workflow, project-management, multi-agent, requirements, product-spec, quality-gate, ui-mockup, architecture-diagram, explainer
 category: development
 ---

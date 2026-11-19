@@ -4,7 +4,7 @@
   "displayName": "菜鸟开发猿",
   "semver": "4.64.0",
   "description": "菜鸟开发猿（原名 dev-workflow-1n1n）：多 AI 协作的通用开发流程 + 6 个零依赖工具 + UI 交付三查（v4.64）。触发词：立项 / 开工 / 走开发流程 / 做界面 / 验收自查。",
-  "author": "主理人 + AI-C",
+  "author": "b29-ctrl",
   "tags": [
     "dev-workflow",
     "multi-agent",
