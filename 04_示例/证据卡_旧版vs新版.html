@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>方案图证据卡 · 旧版 vs 新版（以「工单系统」为例）</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 36px 28px;
+    background: #eef1f5;
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    color: #1c2430; width: 1440px;
+  }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 2px solid #c9d2dd; padding-bottom: 12px; }
+  .head h1 { margin: 0; font-size: 26px; letter-spacing: .5px; }
+  .head .sub { font-size: 14px; color: #5b6879; margin-top: 6px; }
+  .head .meta { text-align: right; font-size: 12.5px; color: #6a7686; line-height: 1.7; }
+  .cols { display: flex; gap: 26px; margin-top: 22px; align-items: stretch; }
+  .card { flex: 1; background: #fff; border-radius: 10px; padding: 22px 24px 20px; box-shadow: 0 2px 10px rgba(20,30,50,.08); border-top: 6px solid #ccc; }
+  .old { border-top-color: #b23c3c; }
+  .new { border-top-color: #1f7a4d; }
+  .tag { display: inline-block; font-size: 12px; padding: 3px 9px; border-radius: 999px; letter-spacing: .5px; }
+  .old .tag { background: #fbeaea; color: #9c2f2f; }
+  .new .tag { background: #e8f5ee; color: #14603b; }
+  .card h2 { font-size: 19px; margin: 10px 0 4px; }
+  .card .lead { font-size: 13px; color: #67707d; margin: 0 0 14px; }
+  h3 { font-size: 13.5px; margin: 16px 0 7px; padding-left: 9px; border-left: 3px solid #d7dee7; color: #2b3542; }
+  .new h3 { border-left-color: #9fd3b6; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: left; padding: 5px 7px; border-bottom: 1px solid #edf0f4; vertical-align: top; }
+  th { color: #66707e; font-weight: 600; background: #f8fafc; }
+  code, .mono { font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px; background: #f2f5f9; padding: 1px 5px; border-radius: 4px; color: #24405e; }
+  ul, ol { margin: 6px 0 0 18px; padding: 0; font-size: 12.5px; line-height: 1.75; }
+  li { margin-bottom: 2px; }
+  .chk { list-style: none; margin-left: 0; }
+  .chk li::before { content: "☑ "; color: #1f7a4d; font-weight: 700; }
+  .quote { background: #f7f9fb; border-left: 3px solid #ccd6e0; padding: 8px 11px; font-size: 12.5px; color: #45505e; margin-top: 8px; border-radius: 0 6px 6px 0; }
+  .fill { display: inline-block; min-width: 150px; border-bottom: 1px dashed #9aa7b6; }
+  .foot { margin-top: 24px; background: #fff; border-radius: 10px; padding: 18px 24px; box-shadow: 0 2px 10px rgba(20,30,50,.08); }
+  .foot h3 { border-left-color: #3f6ea8; margin-top: 0; }
+  .metrics { display: flex; gap: 20px; margin-top: 10px; }
+  .metric { flex: 1; background: #f7f9fc; border-radius: 8px; padding: 12px 14px; }
+  .metric .k { font-size: 12px; color: #6b7685; }
+  .metric .v { font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .metric .n { font-size: 12px; color: #7b8695; margin-top: 3px; line-height: 1.5; }
+  .same { font-size: 13px; color: #2b3542; background: #fff8e6; border: 1px solid #f0dcae; border-radius: 8px; padding: 10px 14px; margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <div>
+    <h1>方案图 · 证据卡：旧版 vs 新版</h1>
+    <div class="sub">同一批事实、同一个项目（<span class="mono">G:\桌面\工单系统</span>），只换说法，看哪一版能照着填。</div>
+  </div>
+  <div class="meta">
+    菜鸟开发猿 v4.62 · 门① 用<br>
+    示例数据：工单系统 v1.0 · 8 个环节
+  </div>
+</div>
+
+<div class="cols">
+
+  <!-- 旧版 -->
+  <section class="card old">
+    <span class="tag">旧版 · 术语体</span>
+    <h2>方案图 · 证据卡</h2>
+    <p class="lead">门① 出图前填写；主元素挂 sources，关系证据挂 owning element。</p>
+
+    <h3>1. 图型与范围</h3>
+    <p style="font-size:12.5px;margin:0">architecture；主元素 8 个，关系 11 条；抽象层级：接口层。</p>
+
+    <h3>2. 证据挂载规则</h3>
+    <ul>
+      <li>components[].sources 每项 ≤3 段 <code>path:line</code>；</li>
+      <li>关系不挂 sources，证据挂 owning element（调用者/写入者）；</li>
+      <li>脏工作区不得作为 HEAD 证据。</li>
+    </ul>
+
+    <h3>3. 主元素出处</h3>
+    <table>
+      <tr><th>component</th><th>source</th></tr>
+      <tr><td>ticket-create</td><td><code>routers/tickets.py:198</code></td></tr>
+      <tr><td>approve</td><td><code>routers/tickets.py:368</code></td></tr>
+      <tr><td>price / lock-price</td><td><code>routers/tickets.py:400,438</code></td></tr>
+      <tr><td>dispatch</td><td><code>routers/tickets.py:471</code></td></tr>
+      <tr><td>construct</td><td><code>routers/tickets.py:506</code></td></tr>
+      <tr><td>report</td><td><code>routers/tickets.py:518</code></td></tr>
+      <tr><td>collect</td><td><code>routers/tickets.py:554</code></td></tr>
+      <tr><td>seal</td><td><code>routers/tickets.py:599</code></td></tr>
+    </table>
+
+    <h3>4. 校验口径</h3>
+    <p style="font-size:12.5px;margin:0">schema / layout / route / label 净空 共 9 项，0 error、0 warning；失败按 rule code + subject + evidence 修复，同一 issue 两次上限。</p>
+
+    <h3>5. 证据分级</h3>
+    <p style="font-size:12.5px;margin:0">artifact checks / browser evidence / captures / perceptual review 四者不得互相冒充；未做感知评审时如实上报 <code>visual_review: not_requested</code>。</p>
+
+    <h3>6. 未决</h3>
+    <p style="font-size:12.5px;margin:0">无。</p>
+  </section>
+
+  <!-- 新版 -->
+  <section class="card new">
+    <span class="tag">新版 · 出门条</span>
+    <h2>这张图要出门，先填这张条</h2>
+    <p class="lead">填不满的格子，就是这张图还不该出门的地方。</p>
+
+    <h3>第 1 格：这张图要回答哪一句话？</h3>
+    <p style="font-size:12.5px;margin:0"><b>一张单，从提报到封存，要经过几道手？谁在哪一步签字？</b></p>
+
+    <h3>第 2 格：图是从哪个版本抄的？</h3>
+    <table>
+      <tr><th>要填</th><th>填什么</th></tr>
+      <tr><td>哪个项目</td><td>工单系统</td></tr>
+      <tr><td>哪个版本</td><td><code>a1b2c3d</code>（示例）</td></tr>
+      <tr><td>有没有没保存的改动</td><td>没有</td></tr>
+    </table>
+
+    <h3>第 3 格：每个框，你从哪看来的？</h3>
+    <table>
+      <tr><th>图上的框</th><th>在哪看到的</th><th>那一行说了什么</th></tr>
+      <tr><td>提报</td><td><code>tickets.py 第 198 行</code></td><td>新单子在这里生成</td></tr>
+      <tr><td>审核</td><td><code>tickets.py 第 368 行</code></td><td>主管点“通过”</td></tr>
+      <tr><td>定价锁价</td><td><code>第 400 / 438 行</code></td><td>价格定死后不许改</td></tr>
+      <tr><td>派单</td><td><code>第 471 行</code></td><td>把活派给施工方</td></tr>
+      <tr><td>施工</td><td><code>第 506 行</code></td><td>施工方进场干活</td></tr>
+      <tr><td>报账</td><td><code>第 518 行</code></td><td>把花费报上来</td></tr>
+      <tr><td>收款</td><td><code>第 554 行</code></td><td>财务记账</td></tr>
+      <tr><td>封存</td><td><code>第 599 行</code></td><td>单子锁死，谁也不许再改</td></tr>
+    </table>
+
+    <h3>第 4 格：三个自查</h3>
+    <ul class="chk">
+      <li>“配了”就等于“在跑”？不——只认代码里真调用的那一步。</li>
+      <li>“说了”就等于“做了”？不——写库要找到真正动手的那一行。</li>
+      <li>一个框塞了三件事？没有——发起人、干活的人、存东西的地方分开画。</li>
+    </ul>
+
+    <h3>第 5 格：还有什么没搞清楚？</h3>
+    <p style="font-size:12.5px;margin:0">财务默认看不到单子，要主理人单独授权；这个“授权”要不要在图里单画一步？<b>——明天问一下再定。</b></p>
+
+    <h3>第 6 格：检查到哪一步了？</h3>
+    <ul class="chk">
+      <li>机器查过格式（没重叠、字没压线）</li>
+      <li>真机打开看过（大屏小屏没撑破）</li>
+      <li>截图存了：<span class="mono">_演示\方案图.png</span></li>
+      <li>有人真的用眼睛看过</li>
+    </ul>
+  </section>
+
+</div>
+
+<div class="foot">
+  <h3>同样的 8 个框、同样的 8 行出处，差别只在“要不要先学一套词”</h3>
+  <div class="metrics">
+    <div class="metric">
+      <div class="k">旧版要先懂</div>
+      <div class="v">12 个术语</div>
+      <div class="n">sources、owning element、path:line、schema、rule code、subject、artifact checks、perceptual review、visual_review、dirty worktree、net clearance、assertion</div>
+    </div>
+    <div class="metric">
+      <div class="k">新版只用了</div>
+      <div class="v">3 个普通词</div>
+      <div class="n">文件、行号、版本——其余全是“在哪看到的、说了什么、有没有搞清楚”</div>
+    </div>
+    <div class="metric">
+      <div class="k">照着填</div>
+      <div class="v">旧版：填不了　新版：能填</div>
+      <div class="n">旧版要先去问“什么叫 owning element”；新版第 3 格给了“不会写就这样写”的样例</div>
+    </div>
+  </div>
+  <div class="same">两版查的是同一件事：<b>图里每个框、每条线，说得出出处；没看过就不许写“已验”。</b>新版没有降低标准，只是把标准说成了人话。</div>
+</div>
+
+</body>
+</html>

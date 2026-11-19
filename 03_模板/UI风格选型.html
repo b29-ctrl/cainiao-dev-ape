@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI 界面风格选型</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:14px/1.6 "Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:#f4f6f9;color:#1f2328;padding:28px 20px 60px}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin-bottom:6px}
+  .lead{color:#6b7280;font-size:13px;margin-bottom:6px}
+  .how{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;font-size:13px;color:#1e40af;margin:14px 0 22px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(15,23,42,.05);display:flex;flex-direction:column}
+  .demo{height:132px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .card h2{font-size:16px;padding:12px 14px 2px;display:flex;align-items:center;gap:8px}
+  .card h2 small{font-weight:400;color:#9ca3af;font-size:11.5px}
+  .card p{font-size:12.5px;color:#4b5563;padding:4px 14px;line-height:1.55}
+  .card .scene{padding:8px 14px 12px;font-size:11.5px;color:#6b7280}
+  .card .scene b{color:#374151}
+  .card .ref{padding:0 14px 12px;font-size:11px}
+  .card .ref a{color:#2563eb;text-decoration:none}
+  footer{margin-top:28px;font-size:12.5px;color:#6b7280}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12.5px;background:#fff;border-radius:10px;overflow:hidden}
+  th,td{border:1px solid #eef0f3;padding:8px 10px;text-align:left}
+  th{background:#f8fafc;color:#374151}
+  /* ===== 各风格示例图 ===== */
+  .d-flat{background:#eef2ff}
+  .d-flat .box{width:210px;background:#fff;border-radius:10px;padding:10px}
+  .d-flat .bar{height:10px;border-radius:4px;background:#2563eb;width:60%;margin-bottom:7px}
+  .d-flat .bar2{height:7px;border-radius:4px;background:#cbd5e1;width:90%;margin-bottom:5px}
+  .d-flat .bar3{height:7px;border-radius:4px;background:#cbd5e1;width:70%;margin-bottom:9px}
+  .d-flat .btn{height:20px;border-radius:6px;background:#2563eb;width:56px}
+
+  .d-mat{background:#eceff1}
+  .d-mat .box{width:200px;background:#fff;border-radius:8px;padding:10px;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+  .d-mat .t{height:9px;width:55%;background:#3f51b5;border-radius:3px;margin-bottom:8px}
+  .d-mat .l{height:6px;background:#e0e0e0;border-radius:3px;margin-bottom:5px}
+  .d-mat .fab{position:absolute;right:38px;bottom:20px;width:36px;height:36px;border-radius:50%;background:#f50057;box-shadow:0 4px 10px rgba(245,0,87,.45);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+
+  .d-glass{background:linear-gradient(135deg,#7c3aed,#06b6d4 60%,#f472b6)}
+  .d-glass .box{width:200px;padding:12px;border-radius:14px;background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.45);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+  .d-glass .t{height:8px;width:50%;background:rgba(255,255,255,.85);border-radius:4px;margin-bottom:8px}
+  .d-glass .l{height:6px;background:rgba(255,255,255,.55);border-radius:3px;margin-bottom:5px}
+
+  .d-neum{background:#e6e9ef}
+  .d-neum .box{width:170px;height:88px;border-radius:16px;background:#e6e9ef;
+    box-shadow:8px 8px 16px #c8ccd4,-8px -8px 16px #ffffff;display:flex;align-items:center;justify-content:center}
+  .d-neum .btn{width:78px;height:30px;border-radius:10px;background:#e6e9ef;
+    box-shadow:4px 4px 8px #c8ccd4,-4px -4px 8px #ffffff}
+
+  .d-clay{background:#fdf2f8}
+  .d-clay .box{width:150px;height:86px;border-radius:26px;background:#f9a8d4;
+    box-shadow:inset -6px -6px 12px rgba(190,24,93,.35),inset 6px 6px 12px rgba(255,255,255,.85),0 10px 20px rgba(190,24,93,.25)}
+  .d-clay .dot{position:absolute;width:34px;height:34px;border-radius:50%;background:#a7f3d0;
+    box-shadow:inset -3px -3px 6px rgba(4,120,87,.35),inset 3px 3px 6px rgba(255,255,255,.9);right:50px;bottom:22px}
+
+  .d-skeu{background:#2b2f36}
+  .d-skeu .knob{width:86px;height:86px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#f8fafc,#94a3b8 55%,#334155);
+    box-shadow:0 6px 14px rgba(0,0,0,.6),inset 0 2px 4px rgba(255,255,255,.7);position:relative}
+  .d-skeu .knob::after{content:"";position:absolute;left:50%;top:10px;width:4px;height:26px;background:#1e293b;border-radius:2px;transform:translateX(-50%)}
+
+  .d-swiss{background:#fff}
+  .d-swiss .line{position:absolute;left:0;right:0;top:44px;height:1px;background:#e5e7eb}
+  .d-swiss .t{font-size:34px;font-weight:800;letter-spacing:-1px;color:#111}
+  .d-swiss .s{font-size:10px;color:#9ca3af;letter-spacing:2px;position:absolute;bottom:20px;left:40px}
+
+  .d-bento{background:#f1f5f9;padding:12px}
+  .d-bento .g{display:grid;grid-template-columns:repeat(4,42px);grid-template-rows:repeat(2,42px);gap:6px}
+  .d-bento .c{background:#fff;border-radius:9px;box-shadow:0 1px 4px rgba(15,23,42,.08)}
+  .d-bento .c1{grid-column:span 2;grid-row:span 2;background:#dbeafe}
+  .d-bento .c2{grid-column:span 2;background:#fef3c7}
+  .d-bento .c3{background:#dcfce7}
+  .d-bento .c4{background:#fce7f3}
+
+  .d-dark{background:#0f1115}
+  .d-dark .box{width:200px;background:#1e1e1e;border:1px solid #2c2c2c;border-radius:10px;padding:10px}
+  .d-dark .t{height:8px;width:45%;background:#60a5fa;border-radius:4px;margin-bottom:8px}
+  .d-dark .l{height:6px;background:#3a3f46;border-radius:3px;margin-bottom:5px}
+
+  .d-mem{background:#fef9c3}
+  .d-mem .s1{position:absolute;width:74px;height:74px;border-radius:50%;background:#f43f5e;left:34px;top:20px}
+  .d-mem .s2{position:absolute;width:0;height:0;border-left:26px solid transparent;border-right:26px solid transparent;border-bottom:46px solid #22d3ee;right:46px;top:26px}
+  .d-mem .s3{position:absolute;width:60px;height:6px;background:#0ea5e9;transform:rotate(-18deg);left:60px;bottom:24px;border-radius:3px}
+
+  .d-y2k{background:linear-gradient(135deg,#c084fc,#22d3ee)}
+  .d-y2k .chrome{width:150px;height:56px;border-radius:10px;
+    background:linear-gradient(180deg,#f8fafc,#94a3b8 45%,#e2e8f0 55%,#64748b);
+    box-shadow:0 6px 16px rgba(0,0,0,.25),inset 0 1px 0 #fff}
+  .d-y2k .star{position:absolute;color:#fff;font-size:14px}
+  .d-y2k .s1{left:40px;top:18px}
+  .d-y2k .s2{right:40px;bottom:20px}
+
+  .d-vapor{background:linear-gradient(180deg,#1e1b4b,#7e22ce 55%,#f472b6)}
+  .d-vapor .sun{width:66px;height:66px;border-radius:50%;background:linear-gradient(180deg,#fde68a,#f97316);box-shadow:0 0 26px rgba(251,146,60,.85)}
+  .d-vapor .grid{position:absolute;left:0;right:0;bottom:0;height:52px;
+    background-image:linear-gradient(rgba(236,72,153,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(236,72,153,.45) 1px,transparent 1px);
+    background-size:26px 14px;transform:perspective(120px) rotateX(58deg);transform-origin:bottom}
+  @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+  /* ===== 可勾选 ===== */
+  .card{cursor:pointer;transition:box-shadow .15s,border-color .15s,transform .15s}
+  .card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(15,23,42,.10)}
+  .card.selected{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+  .card .pick{position:absolute;right:10px;top:10px;width:24px;height:24px;border-radius:50%;
+    background:rgba(255,255,255,.9);border:1px solid #cbd5e1;display:flex;align-items:center;
+    justify-content:center;font-size:13px;color:transparent}
+  .card.selected .pick{background:#2563eb;border-color:#2563eb;color:#fff}
+  .selbar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;
+    box-shadow:0 -4px 16px rgba(15,23,42,.08);padding:12px 20px;z-index:20}
+  .selbar .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .selbar .now{font-size:14px;color:#374151}
+  .selbar .now b{color:#2563eb}
+  .selbar label{font-size:13px;color:#4b5563;display:flex;align-items:center;gap:6px}
+  .selbar button{font:inherit;padding:10px 22px;border-radius:10px;border:1px solid #d1d5db;background:#fff;cursor:pointer}
+  .selbar button.main{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:600}
+  .selbar button:disabled{opacity:.45;cursor:not-allowed}
+  .selbar .tip{font-size:12.5px;color:#6b7280}
+  body{padding-bottom:110px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>UI 界面风格选型</h1>
+  <p class="lead">S2 效果图之前先定风格——风格错了，整套返工。</p>
+  <div class="how">
+    <b>怎么用：</b>挑 1 个主风格（最多再叠 1 个主题，如暗黑）→ 把编号告诉 AI-A → 写进【项目目录】的 `00_环境.md`（模板在 `03_模板/00_环境.md`）。下方示例图为 CSS 自绘示意，不是最终视觉稿。
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="demo d-flat"><div class="box"><div class="bar"></div><div class="bar2"></div><div class="bar3"></div><div class="btn"></div></div></div>
+      <h2>1 扁平风 Flat <small>最稳妥的通用款</small></h2>
+      <p>纯色块、少阴影、靠色彩与留白做层级。跨端一致性好，开发和维护成本最低。</p>
+      <div class="scene"><b>适用：</b>工具类 APP、商城小程序、政务/银行、绝大多数大众产品</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/bBVB7Vxqjs" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-mat"><div class="box"><div class="t"></div><div class="l"></div><div class="l" style="width:80%"></div></div><div class="fab">＋</div></div>
+      <h2>2 Material Design <small>谷歌体系，B 端首选</small></h2>
+      <p>用投影高度表达"纸的层级"，圆角、栅格、动效、组件状态都有规范，组件库成熟。</p>
+      <div class="scene"><b>适用：</b>安卓 APP、SaaS 后台、B 端管理系统</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/RQWRgz4FMU" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-glass"><div class="box"><div class="t"></div><div class="l"></div><div class="l" style="width:75%"></div></div></div>
+      <h2>3 毛玻璃 Glassmorphism <small>苹果带火的高端风</small></h2>
+      <p>半透明面板 + 背景模糊 + 1px 浅描边，通透有高级感。强依赖背景，低端机易掉帧。</p>
+      <div class="scene"><b>适用：</b>高端品牌 APP、iOS 端、营销落地页</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/o0THKksVoV" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-neum"><div class="box"><div class="btn"></div></div></div>
+      <h2>4 新拟态 Neumorphism <small>软 UI，慎用</small></h2>
+      <p>同色系 + 双向柔阴影做出凸起/凹陷。质感特别但对比度低，用户分不清哪里能点。</p>
+      <div class="scene"><b>仅限：</b>看板装饰、概念稿；<b>不要</b>用于表单、支付、主流程</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/CDH8Oo9Y5X" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-clay"><div class="box"></div><div class="dot"></div></div>
+      <h2>5 黏土风 Claymorphism <small>软 3D 卡通</small></h2>
+      <p>超大圆角 + 外阴影 + 内高光，做出"橡皮泥"体积感；成本高（需 3D 素材）。</p>
+      <div class="scene"><b>适用：</b>教育、亲子、健身、种草类小程序</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/wFob94SXJx" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-skeu"><div class="knob"></div></div>
+      <h2>6 拟物化 Skeuomorphism <small>老苹果风，只做单点</small></h2>
+      <p>复刻真实材质：金属高光、纹理、旋钮。整套用会显老，建议只在单点控件上用。</p>
+      <div class="scene"><b>适用：</b>音频调音、智能家居面板、相机模拟器</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/n9TbB9RkgS" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-swiss"><div class="line"></div><div class="t">Aa</div><div class="s">SWISS  GRID</div></div>
+      <h2>7 瑞士极简 Swiss <small>内容即设计</small></h2>
+      <p>严格栅格、大留白、无衬线字体、字号对比强烈，几乎不用装饰。实现成本极低。</p>
+      <div class="scene"><b>适用：</b>企业官网、作品集、文档/知识库、专业 SaaS</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/D3fykLf5Jv" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-bento"><div class="g"><div class="c c1"></div><div class="c c2"></div><div class="c c3"></div><div class="c c4"></div></div></div>
+      <h2>8 Bento 便当网格 <small>当下最火布局</small></h2>
+      <p>大小不等的圆角卡片拼成便当盒，一格一个卖点，天然适配响应式。</p>
+      <div class="scene"><b>适用：</b>官网首屏、数据仪表盘、工具类主页</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/dT2opYWPmA" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-dark"><div class="box"><div class="t"></div><div class="l"></div><div class="l" style="width:72%"></div></div></div>
+      <h2>9 暗黑模式 Dark <small>配色体系，不是独立风格</small></h2>
+      <p>深色基底 + 高饱和强调色，可叠加任意风格。不是简单反色，色阶/描边要单独做。</p>
+      <div class="scene"><b>适用：</b>全行业；工具、开发、金融、影音几乎必做</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/XTQ0eYAADT" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-mem"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div>
+      <h2>10 孟菲斯 Memphis <small>营销向撞色</small></h2>
+      <p>荧光撞色 + 不规则几何 + 波浪圆点，极强吸睛力，但大面积铺会刺眼。</p>
+      <div class="scene"><b>仅限：</b>活动页、Banner、文创；正文回到中性色</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/lVkHazQtlL" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-y2k"><div class="chrome"></div><span class="star s1">✦</span><span class="star s2">✧</span></div>
+      <h2>11 Y2K 千禧风 <small>潮牌/美妆向</small></h2>
+      <p>镀铬金属、果冻渐变、像素星星、粉紫撞色，带 2000 年代科技乐观主义。</p>
+      <div class="scene"><b>适用：</b>潮牌、美妆、短视频、音乐类活动页</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/Pz4TTyd5Vo" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+    <div class="card">
+      <div class="demo d-vapor"><div class="sun"></div><div class="grid"></div></div>
+      <h2>12 蒸汽波 Vaporwave <small>氛围感极强</small></h2>
+      <p>紫粉青蓝渐变、透视网格、落日圆盘、故障感，怀旧又赛博。</p>
+      <div class="scene"><b>适用：</b>音乐/播客、创意 Landing Page、活动专题</div>
+      <div class="ref"><a href="https://aka.doubaocdn.com/l/Jz12BXLp9x" target="_blank">原手册参考图 ↗</a></div>
+    </div>
+
+  </div>
+
+  <footer>
+    <b>按场景选（照这个走不会错）</b>
+    <table>
+      <tr><th>你的项目</th><th>推荐主风格</th><th>可叠加</th></tr>
+      <tr><td>B 端后台 / SaaS</td><td>扁平 或 瑞士极简（+ Material 组件）</td><td>暗黑、Bento 仪表盘</td></tr>
+      <tr><td>电商 / 商城小程序</td><td>扁平 2.0 + 大图卡</td><td>Soft UI 微投影</td></tr>
+      <tr><td>大众工具类 APP</td><td>扁平 2.0</td><td>暗黑、Bento 主页</td></tr>
+      <tr><td>高端品牌 / iOS</td><td>毛玻璃 + 扁平</td><td>瑞士极简排版</td></tr>
+      <tr><td>教育 / 亲子 / 健身</td><td>黏土风</td><td>孟菲斯插画、Bento 卡片</td></tr>
+      <tr><td>智能硬件 / 控制类</td><td>拟物单点控件 + 扁平界面</td><td>暗黑</td></tr>
+      <tr><td>官网 / 作品集 / 知识库</td><td>瑞士极简 + Bento 首屏</td><td>毛玻璃点缀</td></tr>
+      <tr><td>活动 / 营销专题页</td><td>孟菲斯 / Y2K / 蒸汽波（选一）</td><td>品牌主色统一</td></tr>
+    </table>
+    <p style="margin-top:10px">决策线：先定<b>业务严肃度</b>（越严肃越扁平/瑞士/Material）→ 再定<b>品牌情绪</b>（越高调越孟菲斯/Y2K/蒸汽波）→ 最后定<b>是否做暗黑</b> → 其余只做局部点缀。</p>
+    <p style="margin-top:6px">最常见的翻车：一个产品混三种风格 / 只做亮色不做暗黑 / 毛玻璃上低端机 / 新拟态做主按钮 / 撞色铺满正文。</p>
+  </footer>
+</div>
+
+<div class="selbar">
+  <div class="in">
+    <span class="now">已选：<b id="picked">未选择</b></span>
+    <label><input type="checkbox" id="dark"> 叠加暗黑模式</label>
+    <button class="main" id="confirmBtn" disabled>确定风格</button>
+    <button id="copyBtn">复制文本</button>
+    <span class="tip" id="tip">点卡片选中 → 确定</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+  var KEY = 'ui_style_pick_v1';
+  var state = { idx: 0, dark: false };
+
+  // 给每张卡加勾选圆点
+  cards.forEach(function (c, i) {
+    var dot = document.createElement('div');
+    dot.className = 'pick';
+    dot.textContent = '✓';
+    c.style.position = 'relative';
+    c.appendChild(dot);
+    c.setAttribute('data-idx', i + 1);
+  });
+
+  function nameOf(i) {
+    var h2 = cards[i - 1].querySelector('h2');
+    var clone = h2.cloneNode(true);
+    var sm = clone.querySelector('small');
+    if (sm) sm.remove();
+    return clone.textContent.trim();
+  }
+
+  function render() {
+    cards.forEach(function (c, i) {
+      c.classList.toggle('selected', state.idx === i + 1);
+    });
+    var p = document.getElementById('picked');
+    var btn = document.getElementById('confirmBtn');
+    if (state.idx) {
+      p.textContent = nameOf(state.idx) + (state.dark ? ' + 暗黑模式' : '');
+      btn.disabled = false;
+    } else {
+      p.textContent = '未选择';
+      btn.disabled = true;
+    }
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function text() {
+    return '风格：' + nameOf(state.idx) + (state.dark ? ' + 暗黑模式' : '');
+  }
+
+  cards.forEach(function (c, i) {
+    c.addEventListener('click', function () {
+      state.idx = (state.idx === i + 1) ? 0 : (i + 1);   // 再点一次取消
+      render();
+    });
+  });
+
+  document.getElementById('dark').addEventListener('change', function (e) {
+    state.dark = e.target.checked;
+    render();
+  });
+
+  document.getElementById('confirmBtn').addEventListener('click', function () {
+    var t = text();
+    copy(t);
+    document.getElementById('tip').textContent = '已确定：' + t + '（已复制 → 粘进【项目目录】的 00_环境.md，模板在 03_模板/00_环境.md）';
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    if (!state.idx) return;
+    copy(text());
+    document.getElementById('tip').textContent = '已复制：' + text();
+  });
+
+  function copy(t) {
+    var ta = document.createElement('textarea');
+    ta.value = t;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+  }
+
+  // 恢复上次选择
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved && saved.idx) {
+      state.idx = saved.idx;
+      state.dark = !!saved.dark;
+      document.getElementById('dark').checked = state.dark;
+    }
+  } catch (e) {}
+
+  render();
+
+  // ?auto=1 时顶部提示这是流程自动弹出
+  if (location.search.indexOf('auto') >= 0) {
+    document.getElementById('tip').textContent = '流程自动弹出：点卡片选中 → 确定';
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>

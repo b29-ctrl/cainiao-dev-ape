@@ -1,0 +1,283 @@
+{
+  "version": "1.0",
+  "name": "大型项目标准岗位目录",
+  "note": "调度台与技能包共用的岗位唯一口径；AI 可填多个岗位，但必须过 rules 冲突校验。",
+  "layers": [
+    {
+      "id": "governance",
+      "name": "决策治理层",
+      "roles": [
+        {
+          "id": "boss",
+          "name": "大BOSS/拍板人",
+          "human_only": true,
+          "unique": true,
+          "can_sign": ["方案评审", "独立验收", "终验发版"],
+          "skill_role": "大BOSS",
+          "adapter_defaults": ["boss"],
+          "allow_acting": false
+        },
+        {
+          "id": "lead",
+          "name": "主理人/项目负责人",
+          "unique": true,
+          "can_plan": true,
+          "can_coordinate": true,
+          "skill_role": "主理人",
+          "adapter_defaults": ["dsh"],
+          "allow_acting": false
+        },
+        {
+          "id": "pmo",
+          "name": "PMO/项目经理",
+          "can_plan": true,
+          "can_coordinate": true,
+          "skill_role": "小组队长",
+          "allow_acting": true
+        },
+        {
+          "id": "module_lead",
+          "name": "模块负责人",
+          "can_plan": true,
+          "can_coordinate": true,
+          "skill_role": "小组队长",
+          "allow_acting": true
+        }
+      ]
+    },
+    {
+      "id": "product",
+      "name": "产品设计层",
+      "roles": [
+        {
+          "id": "product_manager",
+          "name": "产品经理",
+          "can_plan": true,
+          "skill_role": "AI-C",
+          "allow_acting": true
+        },
+        {
+          "id": "requirement",
+          "name": "需求/业务分析",
+          "can_plan": true,
+          "skill_role": "AI-C",
+          "allow_acting": true
+        },
+        {
+          "id": "ui",
+          "name": "UI设计",
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "ux",
+          "name": "UX/交互",
+          "skill_role": "AI-A",
+          "allow_acting": true
+        }
+      ]
+    },
+    {
+      "id": "engineering",
+      "name": "研发实现层",
+      "roles": [
+        {
+          "id": "architect",
+          "name": "架构师",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "frontend",
+          "name": "前端开发",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "backend",
+          "name": "后端开发",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "mobile",
+          "name": "移动端开发",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "data_algo",
+          "name": "数据/算法",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "integration",
+          "name": "接口/集成",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "adapter_defaults": ["a2a-agent", "webhook-bot", "pull-client"],
+          "allow_acting": true
+        },
+        {
+          "id": "dev_general",
+          "name": "代码开发（通用）",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "adapter_defaults": ["codex", "dsh", "openai-compat"],
+          "allow_acting": true
+        }
+      ]
+    },
+    {
+      "id": "quality",
+      "name": "质量交付层",
+      "roles": [
+        {
+          "id": "qa",
+          "name": "测试/QA",
+          "can_test": true,
+          "skill_role": "AI-B",
+          "allow_acting": true
+        },
+        {
+          "id": "build_devops",
+          "name": "构建测试/DevOps",
+          "can_build": true,
+          "skill_role": "AI-B",
+          "adapter_defaults": ["workbuddy"],
+          "allow_acting": true
+        },
+        {
+          "id": "security",
+          "name": "安全/合规",
+          "can_audit": true,
+          "skill_role": "AI-C",
+          "allow_acting": true
+        },
+        {
+          "id": "audit",
+          "name": "评审审计",
+          "can_audit": true,
+          "skill_role": "AI-C",
+          "adapter_defaults": ["coze"],
+          "allow_acting": true
+        },
+        {
+          "id": "independent_acceptor",
+          "name": "独立验收人",
+          "human_only": true,
+          "can_accept": true,
+          "skill_role": "独立验收",
+          "allow_acting": false
+        },
+        {
+          "id": "release_ops",
+          "name": "发布/运维",
+          "can_release": true,
+          "skill_role": "AI-B",
+          "allow_acting": true
+        },
+        {
+          "id": "docs",
+          "name": "文档/知识库",
+          "can_doc": true,
+          "skill_role": "AI-C",
+          "allow_acting": true
+        },
+        {
+          "id": "test_double",
+          "name": "演示/测试替身",
+          "skill_role": "AI-B",
+          "adapter_defaults": ["demo"],
+          "allow_acting": true
+        }
+      ]
+    }
+  ],
+  "presets": {
+    "small_3ai": {
+      "name": "标准 3AI（小项目）",
+      "roles": {
+        "boss": 1,
+        "lead": 1,
+        "dev_general": 1,
+        "build_devops": 1,
+        "independent_acceptor": 1,
+        "qa": 1,
+        "docs": 1
+      }
+    },
+    "medium_6ai": {
+      "name": "中型项目（6AI + 2人）",
+      "roles": {
+        "boss": 1,
+        "lead": 1,
+        "product_manager": 1,
+        "dev_general": 2,
+        "build_devops": 1,
+        "audit": 1,
+        "qa": 1,
+        "independent_acceptor": 1,
+        "docs": 1
+      }
+    },
+    "large_10ai": {
+      "name": "大型项目（10AI + 2人）",
+      "roles": {
+        "boss": 1,
+        "lead": 1,
+        "pmo": 1,
+        "product_manager": 1,
+        "requirement": 1,
+        "ui": 1,
+        "architect": 1,
+        "frontend": 1,
+        "backend": 1,
+        "mobile": 1,
+        "qa": 1,
+        "build_devops": 1,
+        "security": 1,
+        "audit": 1,
+        "independent_acceptor": 1,
+        "release_ops": 1,
+        "docs": 1
+      }
+    }
+  },
+  "rules": [
+    {
+      "id": "write_audit_separation",
+      "desc": "同一 AI/人不能既写码又做代码审核",
+      "conflict": ["can_write", "can_audit"]
+    },
+    {
+      "id": "build_accept_separation",
+      "desc": "同一 AI/人不能既构建又做独立验收",
+      "conflict": ["can_build", "can_accept"]
+    },
+    {
+      "id": "boss_human_only",
+      "desc": "大BOSS/拍板人必须是人工",
+      "role": "boss",
+      "human_only": true
+    },
+    {
+      "id": "lead_unique",
+      "desc": "主理人/项目负责人只能 1 个",
+      "role": "lead",
+      "unique": true
+    },
+    {
+      "id": "acceptor_not_builder",
+      "desc": "独立验收人不得是构建者/写码者/主理人兼任",
+      "role": "independent_acceptor",
+      "allow_acting": false
+    }
+  ]
+}

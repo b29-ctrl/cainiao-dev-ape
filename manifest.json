@@ -1,0 +1,29 @@
+{
+  "id": "cainiao-dev-ape",
+  "name": "cainiao-dev-ape",
+  "displayName": "菜鸟开发猿",
+  "version": "4.64.0",
+  "description": "一个人带多个 AI 做软件项目的通用开发流程（原名 dev-workflow-1n1n）。从需求问卷、产品功能说明书、任务拆分、效果图、风格冻结，到方案评审、代码构建、独立验收、发版，每一步谁做、做到什么算过都写死。带 6 个零依赖工具，以及 UI 交付六铁律与验收三查（v4.64）。触发词：立项 / 开工 / 走开发流程 / 做界面 / 验收自查。",
+  "type": "skill",
+  "author": "主理人 + AI-C",
+  "tags": [
+    "dev-workflow",
+    "project-management",
+    "multi-agent",
+    "requirements",
+    "product-spec",
+    "quality-gate",
+    "ui-mockup",
+    "architecture-diagram",
+    "explainer"
+  ],
+  "category": "development",
+  "entry": "SKILL.md",
+  "output": [
+    "text",
+    "files"
+  ],
+  "config": {
+    "file": "config.json"
+  }
+}

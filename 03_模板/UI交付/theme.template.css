@@ -1,0 +1,142 @@
+﻿/* ============================================================
+   菜鸟开发猿 v4.64 · 03_模板/UI交付/theme.template.css
+   用法：复制到你的效果图目录，改第二层语义 token 就能换主题。
+   规则：本文件是唯一允许出现具体色值的地方；其它文件一律 var()。
+   来源：TRAE 的 ui-delivery-kit（纯 Markdown 方法论文档，零依赖）。
+   ============================================================
+   theme.template.css — token 层模板
+   规则：本文件是唯一允许出现具体色值的地方；其他文件一律 var()
+   ============================================================ */
+
+:root {
+  /* ---------- 第一层：原始色板（只在此处出现 hex） ---------- */
+  --coral-500:#FF6B6B;  --coral-400:#FF8A8A;  --coral-600:#E85555;  --coral-700:#C43D3D;
+  --teal-500:#4ECDC4;   --teal-400:#6FDCD4;   --teal-700:#0F766E;
+  --amber-500:#FFE66D;  --amber-700:#B45309;
+  --violet-500:#A78BFA; --violet-700:#6D28D9;
+  --green-500:#22C55E;  --green-700:#15803D;
+  --red-500:#EF4444;    --red-700:#B91C1C;
+  --gray-0:#FFFFFF;     --gray-50:#FBF9F8;    --gray-100:#F4F1EF;
+  --gray-200:#E8E3E0;   --gray-400:#B9B3B0;   --gray-600:#7A7370;
+  --gray-800:#4A4442;   --gray-900:#2B2724;    --gray-950:#1B1917;
+
+  /* ---------- 第二层：语义 token（组件只用这一层） ---------- */
+  --brand:var(--coral-500);
+  --brand-light:var(--coral-400);
+  --brand-deep:var(--coral-700);
+  --brand-soft:rgba(255,107,107,.12);
+
+  --ink:var(--gray-900);
+  --ink-2:var(--gray-800);
+  --muted:var(--gray-600);
+  --faint:var(--gray-400);
+
+  --bg:var(--gray-50);
+  --surface:rgba(255,255,255,.72);
+  --surface-solid:var(--gray-0);
+  --surface-hover:var(--gray-100);
+  --surface-dim:var(--gray-100);
+
+  --line:var(--gray-200);
+  --line-dash:rgba(122,115,112,.24);
+
+  --success:var(--green-500);   --success-soft:rgba(34,197,94,.14);
+  --warning:var(--amber-500);   --warning-soft:rgba(255,230,109,.28);
+  --danger:var(--red-500);      --danger-soft:rgba(239,68,68,.12);
+  --info:var(--teal-500);       --info-soft:rgba(78,205,196,.16);
+
+  /* 状态色作文字时必须用 -deep 变体 */
+  --green-deep:var(--green-700);
+  --amber-deep:var(--amber-700);
+  --red-deep:var(--red-700);
+  --teal-deep:var(--teal-700);
+  --violet-deep:var(--violet-700);
+
+  /* 聊天气泡：白字需实测对比度 ≥ 4.5:1 */
+  --bubble-1:var(--coral-600);
+  --bubble-2:var(--teal-700);
+
+  /* ---------- 字号 ---------- */
+  --fs-12:12px; --fs-13:13px; --fs-14:14px;
+  --fs-17:17px; --fs-22:22px; --fs-28:28px;
+
+  /* ---------- 圆角：按容器层级 ---------- */
+  --radius-xs:8px; --radius-s:12px; --radius-m:16px;
+  --radius-l:22px; --radius-xl:28px; --radius-pill:999px;
+
+  /* ---------- 间距：4 的倍数 ---------- */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px;
+  --sp-5:24px; --sp-6:32px; --sp-8:48px;
+
+  /* ---------- 阴影 ---------- */
+  --shadow-1:0 1px 2px rgba(43,39,36,.05), 0 6px 18px rgba(43,39,36,.05);
+  --shadow-2:0 2px 6px rgba(43,39,36,.06), 0 14px 34px rgba(43,39,36,.09);
+  --shadow-3:0 8px 22px rgba(43,39,36,.10), 0 30px 60px rgba(43,39,36,.14);
+  --shadow-focus:0 0 0 3px rgba(255,107,107,.32);
+
+  /* ---------- 动效 ---------- */
+  --dur:180ms;
+  --ease:cubic-bezier(.2,.8,.2,1);
+
+  /* ---------- 布局 ---------- */
+  --side-w:220px;
+  --rail-w:clamp(320px,26vw,390px);
+}
+
+/* 暗色：只覆盖第二层语义 token，未做前保持注释
+[data-theme="dark"] {
+  --ink:var(--gray-100);
+  --ink-2:var(--gray-200);
+  --muted:var(--gray-400);
+  --bg:var(--gray-950);
+  --surface:rgba(255,255,255,.06);
+  --surface-solid:var(--gray-900);
+  --surface-hover:rgba(255,255,255,.10);
+  --surface-dim:rgba(255,255,255,.05);
+  --line:rgba(255,255,255,.12);
+  --line-dash:rgba(255,255,255,.16);
+}
+*/
+
+/* ============================================================
+   菜鸟开发猿 v4.64 · 03_模板/UI交付/theme.template.css
+   用法：复制到你的效果图目录，改第二层语义 token 就能换主题。
+   规则：本文件是唯一允许出现具体色值的地方；其它文件一律 var()。
+   来源：TRAE 的 ui-delivery-kit（纯 Markdown 方法论文档，零依赖）。
+   ============================================================
+   基础重置 + 全局组件基态（示例，按需保留）
+   ============================================================ */
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:400 var(--fs-13)/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:none;box-shadow:var(--shadow-focus);border-radius:var(--radius-xs)}
+
+/* 状态 chip：基础态必须写在全局类上 */
+.cp{
+  display:inline-flex;align-items:center;gap:var(--sp-1);
+  padding:2px 10px;border-radius:var(--radius-pill);
+  font-size:var(--fs-12);font-weight:600;white-space:nowrap;
+}
+.cp.is-warn{background:var(--warning-soft);color:var(--amber-deep)}
+.cp.is-done{background:var(--success-soft);color:var(--green-deep)}
+.cp.is-fail{background:var(--danger-soft);color:var(--red-deep)}
+
+/* 按钮基态 */
+.btn{
+  display:inline-flex;align-items:center;gap:var(--sp-2);
+  padding:7px 14px;border:1px solid var(--line);border-radius:var(--radius-s);
+  background:var(--surface-solid);color:var(--ink-2);
+  font:600 var(--fs-13)/1 inherit;white-space:nowrap;cursor:pointer;
+  transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease);
+}
+.btn:hover{background:var(--surface-hover)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:var(--ink)}
+.btn.dng{background:var(--danger-soft);border-color:transparent;color:var(--red-deep)}

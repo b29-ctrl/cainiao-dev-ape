@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>菜鸟开发猿 · 通用开发流程</title>
+<style>
+  :root{
+    --bg:#f4f2fb; --ink:#3d3654; --ink2:#6f688c; --ink3:#9a94b5;
+    --mint:#7fd9bd; --mint2:#c9f6e6; --pink:#ffb3cf; --pink2:#ffe0ea;
+    --yellow:#ffdf8e; --yellow2:#fff3cf; --sky:#a8d8ff; --sky2:#dceeff;
+    --lav:#c7bfff; --lav2:#e9e5ff;
+    --clay:0 18px 38px rgba(120,110,170,.16);
+    --clay-in:inset 0 -8px 16px rgba(150,140,200,.15), inset 0 8px 16px rgba(255,255,255,.95);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:15px/1.7 "Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--bg);color:var(--ink);
+       -webkit-font-smoothing:antialiased}
+  .clay{background:#fff;border-radius:28px;box-shadow:var(--clay),var(--clay-in)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+
+  /* 顶部导航 */
+  .nav{position:sticky;top:0;z-index:50;background:rgba(244,242,251,.85);backdrop-filter:blur(14px);
+       border-bottom:1px solid rgba(150,140,200,.14)}
+  .nav .in{max-width:1080px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .nav b{font-size:15px;letter-spacing:-.2px}
+  .nav a{margin-left:4px;padding:7px 15px;border-radius:14px;font-size:12.5px;color:var(--ink2);text-decoration:none;
+         background:#fff;box-shadow:0 6px 14px rgba(120,110,170,.10),var(--clay-in)}
+  .nav a:hover{color:#1f7a5c;background:linear-gradient(145deg,#f0fff9,#d9f8ec)}
+  .nav .grow{flex:1}
+
+  /* Hero */
+  .hero{padding:64px 0 26px;text-align:center}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:20px;font-size:12.5px;font-weight:700;
+         color:#1f7a5c;background:linear-gradient(145deg,#eafff8,#c9f6e6);box-shadow:0 10px 22px rgba(90,200,170,.25),var(--clay-in)}
+  .hero h1{font-size:44px;line-height:1.24;letter-spacing:-1.2px;margin:22px 0 14px}
+  .hero h1 em{font-style:normal;position:relative;color:#2f9e7a}
+  .hero h1 em::after{content:"";position:absolute;left:-2px;right:-2px;bottom:4px;height:12px;border-radius:6px;
+        background:linear-gradient(90deg,rgba(201,246,230,.9),rgba(255,223,142,.85));z-index:-1}
+  .hero p{font-size:16.5px;color:var(--ink2);max-width:640px;margin:0 auto}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:34px}
+  .stat{padding:22px 18px;text-align:center}
+  .stat .n{font-size:30px;font-weight:800;letter-spacing:-1px}
+  .stat .l{font-size:12.5px;color:var(--ink2);margin-top:2px}
+
+  /* 通用 section */
+  section{padding:44px 0}
+  .stitle{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+  .stitle .num{width:40px;height:40px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+        font-size:15px;font-weight:800;color:#1f7a5c;background:linear-gradient(145deg,#eafff8,#c9f6e6);
+        box-shadow:0 8px 18px rgba(90,200,170,.22),var(--clay-in);flex:none}
+  .stitle h2{font-size:24px;letter-spacing:-.5px}
+  .slead{color:var(--ink2);font-size:14.5px;margin:0 0 24px 54px}
+
+  /* 三层结构 */
+  .org{display:flex;flex-direction:column;gap:14px;align-items:center}
+  .org .lvl{display:flex;align-items:center;gap:14px;padding:18px 24px;border-radius:24px;width:100%}
+  .org .lvl .icon{width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+        font-size:22px;flex:none;box-shadow:var(--clay-in)}
+  .org .lvl .tx b{font-size:17px}
+  .org .lvl .tx span{display:block;font-size:13px;color:var(--ink2)}
+  .org .lvl .tag{margin-left:auto;font-size:12px;font-weight:700;padding:6px 14px;border-radius:13px;flex:none}
+  .l1{background:linear-gradient(150deg,#fff,#eefbf6)} .l1 .icon{background:#c9f6e6}
+  .l2{background:linear-gradient(150deg,#fff,#fff6e6)} .l2 .icon{background:#ffe6ac}
+  .l3{background:linear-gradient(150deg,#fff,#f0f0ff)} .l3 .icon{background:#ded8ff}
+  .arrow{color:var(--ink3);font-size:18px;line-height:1}
+  .tag-solid{color:#1f7a5c;background:#d9f8ec}
+  .tag-warn{color:#9a6b12;background:#fff0cc}
+  .tag-lav{color:#5c4fb8;background:#e9e5ff}
+
+  /* 卡片网格 */
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .card{padding:20px 22px}
+  .card h3{font-size:15.5px;margin-bottom:6px;display:flex;align-items:center;gap:9px}
+  .card p{font-size:13.5px;color:var(--ink2)}
+  .card .no{width:26px;height:26px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;
+        font-size:12px;font-weight:800;color:#b83b63;background:#ffe0ea;flex:none}
+  .card .kv{display:flex;gap:8px;margin-top:10px;font-size:12px}
+  .kv i{font-style:normal;padding:4px 11px;border-radius:11px;background:#f5f3fd;color:var(--ink2)}
+
+  /* 冲突面可视化 */
+  .conf{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px}
+  .conf .box{padding:18px;text-align:center}
+  .conf .box .t{font-size:13px;color:var(--ink2)}
+  .conf .box .v{font-size:30px;font-weight:800;margin:6px 0}
+  .conf .box .d{font-size:11.5px;color:var(--ink3)}
+  .conf .bad .v{color:#d94b76} .conf .good .v{color:#2f9e7a}
+
+  /* 流程 */
+  .flow{position:relative;padding-left:34px}
+  .flow::before{content:"";position:absolute;left:12px;top:8px;bottom:8px;width:4px;border-radius:3px;
+        background:linear-gradient(180deg,#c9f6e6,#a8d8ff,#c7bfff)}
+  .step{position:relative;margin-bottom:14px;padding:16px 20px;border-radius:22px;background:#fff;
+        box-shadow:var(--clay),var(--clay-in)}
+  .step::before{content:"";position:absolute;left:-28px;top:24px;width:14px;height:14px;border-radius:50%;
+        background:#7fd9bd;box-shadow:0 0 0 5px #eafff8}
+  .step .h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .step .h b{font-size:15px}
+  .step .who{font-size:11.5px;padding:3px 11px;border-radius:11px;background:#f0eefb;color:#5c4fb8;font-weight:700}
+  .step p{font-size:13.5px;color:var(--ink2);margin-top:4px}
+  .step .out{font-size:12.5px;color:#2f9e7a;margin-top:6px}
+  .gate{display:inline-block;margin-left:8px;font-size:11.5px;font-weight:800;padding:3px 12px;border-radius:12px;
+        color:#9a6b12;background:linear-gradient(145deg,#fff6d9,#ffe6ac)}
+
+  /* 表格 */
+  table{width:100%;border-collapse:separate;border-spacing:0 8px;font-size:13.5px}
+  thead th{text-align:left;font-size:12px;color:var(--ink2);padding:0 16px 2px;font-weight:600}
+  tbody tr{background:#fff}
+  tbody td{padding:14px 16px;box-shadow:var(--clay-in)}
+  tbody td:first-child{border-radius:18px 0 0 18px;font-weight:700}
+  tbody td:last-child{border-radius:0 18px 18px 0}
+  .pill{display:inline-block;padding:4px 12px;border-radius:12px;font-size:11.5px;font-weight:700}
+  .p-mint{background:#d9f8ec;color:#1c7a5b} .p-yellow{background:#fff3cf;color:#9a6b12}
+  .p-lav{background:#e9e5ff;color:#5c4fb8} .p-pink{background:#ffe0ea;color:#b83b63}
+
+  /* 收尾 */
+  .cta{text-align:center;padding:46px 24px;margin:30px 0 50px;border-radius:32px;
+       background:linear-gradient(150deg,#fff,#eafff8);box-shadow:var(--clay),var(--clay-in)}
+  .cta h2{font-size:26px;letter-spacing:-.5px;margin-bottom:8px}
+  .cta p{color:var(--ink2);font-size:14.5px}
+  .cta code{display:inline-block;margin-top:16px;padding:13px 24px;border-radius:16px;font-size:13.5px;
+       background:#2b2b3a;color:#c9f6e6;box-shadow:0 14px 28px rgba(43,43,58,.3)}
+  footer{text-align:center;padding:0 0 46px;font-size:12px;color:var(--ink3)}
+
+  @media (max-width:860px){
+    .g2,.g3,.conf,.stats{grid-template-columns:1fr}
+    .hero h1{font-size:31px}
+    .slead{margin-left:0}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="in">
+  <b>开发流程技能</b>
+  <span class="grow"></span>
+  <a href="#org">骨架</a>
+  <a href="#fight">为什么不会打架</a>
+  <a href="#flow">运作流程</a>
+  <a href="#gates">五道门</a>
+  <a href="#console">调试台</a><a href="#tools">工具</a>
+</div></nav>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <header class="hero">
+    <span class="badge">● v4.64 · 约 567 KB · 零依赖 · Windows / macOS / Linux</span>
+    <h1>菜鸟开发猿<br><span style="font-size:.5em;opacity:.72">1 主理人 + N 小组队长 + N AI · 通用开发流程</span></h1>
+    <p>一个人带一群 AI，也能把项目做完、做对、做不返工——<br>
+       因为<b>决策头永远 1 个</b>，<b>执行可以无限加</b>，<b>人多不会打架</b>。</p>
+    <div class="stats">
+      <div class="stat clay"><div class="n">1</div><div class="l">主理人（永远一个）</div></div>
+      <div class="stat clay"><div class="n">0–N</div><div class="l">小组队长（按板块加）</div></div>
+      <div class="stat clay"><div class="n">3–N</div><div class="l">AI（下限 3，按依赖图加）</div></div>
+    </div>
+  </header>
+
+  <!-- 骨架 -->
+  <section id="org">
+    <div class="stitle"><span class="num">1</span><h2>骨架：三层可伸缩</h2></div>
+    <p class="slead">唯一主理人拍板，小组队长分块确认需求，AI 舰队并行执行。</p>
+
+    <div class="org">
+      <div class="lvl clay l1">
+        <span class="icon">👤</span>
+        <span class="tx"><b>唯一主理人</b><span>定方向 · 终验 · 发版 · 裁决冲突</span></span>
+        <span class="tag tag-solid">永远 1 个，不拆不加</span>
+      </div>
+      <span class="arrow">▼</span>
+      <div class="lvl clay l2">
+        <span class="icon">🎖</span>
+        <span class="tx"><b>小组队长 0 … N</b><span>各管一摊需求确认，只在授权板块内拍板</span></span>
+        <span class="tag tag-warn">0 … N，按板块加</span>
+      </div>
+      <span class="arrow">▼</span>
+      <div class="lvl clay l3">
+        <span class="icon">🤖</span>
+        <span class="tx"><b>AI 舰队 3 … N</b><span>AI-A 写码 ×N ｜ AI-B 构建 ｜ AI-C 审 ｜ V 独立验收</span></span>
+        <span class="tag tag-lav">3 … N，按依赖图加</span>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card clay"><h3>小项目</h3><p>单页工具、值班表</p><div class="kv"><i>主理人 1</i><i>队长 0</i><i>AI 3</i></div></div>
+      <div class="card clay"><h3>中项目</h3><p>进销存（9 板块）</p><div class="kv"><i>主理人 1</i><i>队长 1</i><i>AI 6</i></div></div>
+      <div class="card clay"><h3>大项目</h3><p>校园一卡通（12 板块）</p><div class="kv"><i>主理人 1</i><i>队长 2</i><i>AI 9</i></div></div>
+    </div>
+  </section>
+
+  <!-- 为什么不能 N 主理人 -->
+  <section>
+    <div class="stitle"><span class="num">2</span><h2>为什么不能「N 个主理人」</h2></div>
+    <p class="slead">冲突面 = n(n-1)/2。人一多，拍板就散了。</p>
+
+    <div class="conf">
+      <div class="box clay good"><div class="t">1 个主理人</div><div class="v">0</div><div class="d">冲突面</div></div>
+      <div class="box clay bad"><div class="t">2 个主理人</div><div class="v">1</div><div class="d">对账口径对不上</div></div>
+      <div class="box clay bad"><div class="t">3 个主理人</div><div class="v">3</div><div class="d">三人三答案</div></div>
+      <div class="box clay bad"><div class="t">4 个主理人</div><div class="v">6</div><div class="d">共享契约互相踩</div></div>
+    </div>
+
+    <div class="card clay" style="margin-top:16px">
+      <h3>实测推演：校园一卡通</h3>
+      <p style="margin-top:6px">
+        <b>2 个主理人</b> → 一个要"消费实时扣款"、一个要"门禁断网也能刷" → 同一个账户两种口径，对账卡死。<br>
+        <b>3 个主理人</b> → "挂失后门禁要不要立刻停？" → 三人三答案，没人裁决。<br>
+        <b>换「1 主理人 + N 小组队长」</b> → 队长只在自己板块内确认，碰共享契约一律上报 → <b style="color:#2f9e7a">冲突面归零</b>。
+      </p>
+    </div>
+  </section>
+
+  <!-- 为什么不会打架 -->
+  <section id="fight">
+    <div class="stitle"><span class="num">3</span><h2>多 AI 为什么不会打架</h2></div>
+    <p class="slead">打架有 9 种形态，每一种都有对应机制拦。</p>
+
+    <div class="grid g3">
+      <div class="card clay"><h3><span class="no">1</span>同时改同一文件</h3><p>A 改一半，B 覆盖</p><div class="kv"><i>写租约</i></div></div>
+      <div class="card clay"><h3><span class="no">2</span>改同一共享契约</h3><p>两人各改账户表</p><div class="kv"><i>契约单写者</i></div></div>
+      <div class="card clay"><h3><span class="no">3</span>各改各的汇不到一起</h3><p>三份代码三种写法</p><div class="kv"><i>集成 owner</i></div></div>
+      <div class="card clay"><h3><span class="no">4</span>版本错乱</h3><p>不知道基于哪版改的</p><div class="kv"><i>三级基线</i></div></div>
+      <div class="card clay"><h3><span class="no">5</span>误删他人文件</h3><p>删了别人在用的</p><div class="kv"><i>删除前核对租约</i></div></div>
+      <div class="card clay"><h3><span class="no">6</span>迁移冲突</h3><p>两个分支都改 schema</p><div class="kv"><i>迁移串行</i></div></div>
+      <div class="card clay"><h3><span class="no">7</span>密钥/数据串用</h3><p>测试库互相污染</p><div class="kv"><i>分支隔离凭据</i></div></div>
+      <div class="card clay"><h3><span class="no">8</span>抢端口/硬件</h3><p>POS 机被同时占用</p><div class="kv"><i>独占时间槽</i></div></div>
+      <div class="card clay"><h3><span class="no">9</span>无限开分支</h3><p>10 个并行一起炸</p><div class="kv"><i>停止线 ≤2</i></div></div>
+    </div>
+
+    <div class="cta" style="margin:22px 0 0;padding:30px 26px">
+      <h2>一句话</h2>
+      <p>打架不是因为 AI 多，是因为「<b>没主</b>」和「<b>无序</b>」。<br>
+         这套流程给了：每块地有主 · 每次合并有人 · 每一步有据 · 每一门有签。</p>
+    </div>
+  </section>
+
+  <!-- 运作流程 -->
+  <section id="flow">
+    <div class="stitle"><span class="num">4</span><h2>完整运作流程</h2></div>
+    <p class="slead">从"开机四问"到"发版"，每一阶段谁做、产出什么、过哪道门。</p>
+
+    <div class="flow">
+      <div class="step clay"><div class="h"><b>S-1 环境初始化</b><span class="who">AI-C 引导 / 主理人答</span></div>
+        <p>四问：选模型（建议 PRO）· 定 AI 数量（≥3）· 按数量分配角色 · 指定项目目录</p>
+        <div class="out">产出：00_环境.md</div></div>
+
+      <div class="step clay"><div class="h"><b>S0 需求</b><span class="who">主理人</span></div>
+        <p>说清要什么；有材料（文档/截图）先给材料，AI 复述确认后再问缺口</p>
+        <div class="out">产出：需求原话</div></div>
+
+      <div class="step clay"><div class="h"><b>S0.1 需求问卷</b><span class="who">AI-C 生成 / 主理人填</span></div>
+        <p>按品类搜真实对标 → 拆模块 → 标必做/二期/不做 → 反推出题；<b>生成前跑冲突校验</b></p>
+        <div class="out">产出：问卷答案</div></div>
+
+      <div class="step clay"><div class="h"><b>S0.2 需求图</b><span class="who">AI-C</span></div>
+        <p>功能地图（必出）+ 主流程（有场景时）+ 角色权限（≥2 角色必出）</p>
+        <div class="out">产出：需求图</div></div>
+
+      <div class="step clay"><div class="h"><b>S1 产品功能说明书</b><span class="who">AI-C 起草 / 主理人确认</span></div>
+        <p>11 章：概述 / 角色权限 / 板块功能 / 流程 / 数据 / 前端 / 后端 / 非功能 / 验收 / 变更</p>
+        <div class="out">产出：说明书 v1.0（唯一权威，v0.x 禁止进方案）</div></div>
+
+      <div class="step clay"><div class="h"><b>S1.1 任务书</b><span class="who">AI-C</span></div>
+        <p>只引用说明书章节 + 本次范围 + 预览环境 + 拆分结果 + 并行度复核</p>
+        <div class="out">产出：任务书</div></div>
+
+      <div class="step clay"><div class="h"><b>S2 效果图</b><span class="who">AI-A</span></div>
+        <p>① 先定风格（12 种选型页）② 分批出「一份 HTML 多页可切换」的可点效果图</p>
+        <div class="out">产出：效果图</div></div>
+
+      <div class="step clay"><div class="h"><b>S3 看图批注</b><span class="who">主理人</span><span class="gate">必选阶段</span></div>
+        <p><b>必选</b>：必须看完效果图并给出结论（改哪、留哪、删哪）。<br>
+           <b>可选</b>：用哪种方式给结论——<br>
+           ① 在调试台里双击直接改（快）　② 口头/文字批注"按钮换绿色、导航挪到左边"，由 AI-A 改</p>
+        <div class="out">产出：修改记录 / 一句"通过"</div></div>
+
+      <div class="step clay"><div class="h"><b>S4 冻结</b><span class="who">AI-C</span></div>
+        <p>风格锁定（<code>风格锁定：是</code>）+ 打 stage tag + 基线提交</p>
+        <div class="out">产出：冻结基线</div></div>
+
+      <div class="step clay"><div class="h"><b>S4.5 接入调度台</b><span class="who">流程主理人（调度台 DSH）</span></div>
+        <p>建调度台项目、填 S4 目录、加主理人/大BOSS/AI、交接 S4 产物、建 S5 门①工单草稿；<b>不是新门禁</b>，门①仍由大BOSS拍板。</p>
+        <div class="out">产出：调度台项目 + S5 工单草稿</div></div>
+
+      <div class="step clay"><div class="h"><b>S5 方案</b><span class="who">AI-A</span><span class="gate">门① 方案审</span></div>
+        <p>技术选型 + 六条硬要求 + 逐项落地写法（文件+行号+可粘贴）</p>
+        <div class="out">产出：方案</div></div>
+      <div class="step clay"><div class="h"><b>S6 实施</b><span class="who">AI-A / AI-B / 独立验收人</span><span class="gate">门② ③ ④</span></div>
+        <p>按板块竖切，一块一块做；每块一个可见里程碑；多 AI 并行时走写租约 + 集成 owner</p>
+        <div class="out">产出：代码 + 产物</div></div>
+
+      <div class="step clay"><div class="h"><b>发版</b><span class="who">主理人</span><span class="gate">门⑤ 终验</span></div>
+        <p>只认证据矩阵，缺任一验收项不签；通过后打 vX.Y.Z</p>
+        <div class="out">产出：版本 + tag</div></div>
+    </div>
+    <p class="slead" style="margin-top:18px">角色边界：流程主理人 = 唯一决策席位；调度台主理人 = 该席位在调度台中的 DSH/process AI；大BOSS = 人工拍板席位，不执行 AI 工单、不代替门④独立验收人。<br>没有调度台时走 S4.5-Lite：复制 <code>03_模板/S4_接入卡.md</code> 人工交接，不阻断流程。</p>
+  </section>
+
+  <!-- 五道门 -->
+  <section id="gates">
+    <div class="stitle"><span class="num">5</span><h2>五道门守什么</h2></div>
+    <p class="slead">每道门都要签字、留证。做的人不能给自己盖章。</p>
+
+    <table>
+      <thead><tr><th>门</th><th>谁签</th><th>判据</th><th>不通过</th></tr></thead>
+      <tbody>
+        <tr><td>① 方案审</td><td><span class="pill p-lav">AI-C</span></td><td>能落地 / 影响面说清 / 不冲突 / 回滚点齐</td><td>打回重写</td></tr>
+        <tr><td>② 代码审</td><td><span class="pill p-lav">AI-C</span></td><td>只读不跑：参数没写反、边界没漏、没误改别处</td><td>打回</td></tr>
+        <tr><td>③ 构建自检</td><td><span class="pill p-yellow">AI-B</span></td><td>编译打包成功、版本号对、静态检查零错、命令与退出码入档</td><td>退回 AI-A</td></tr>
+        <tr><td>④ 独立验收</td><td><span class="pill p-mint">非构建者</span></td><td>正向 N 项 + 负向 3 项 + 证据</td><td>退回</td></tr>
+        <tr><td>⑤ 终验发版</td><td><span class="pill p-pink">主理人</span></td><td>只认证据矩阵，缺一项不签</td><td>不发版</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px;font-size:13px;color:var(--ink2)">
+      <b>门③ 与 门④ 必须分开签</b>：构建者只能证明"产物生成了"，不能证明"行为正确"。
+    </p>
+  </section>
+
+  <!-- 调试台 -->
+  <section id="console">
+    <div class="stitle"><span class="num">6</span><h2>调试台：改 UI 就等于改源码</h2></div>
+    <p class="slead">没有"设计稿 → 写代码"的二次翻译，也没有"每个队长一套环境"的混乱。</p>
+
+    <!-- 特点一 -->
+    <div class="card clay" style="padding:26px 28px;margin-bottom:16px">
+      <h3 style="font-size:19px;margin-bottom:10px">🖥 特点一：改 UI 就是改源码</h3>
+      <p style="font-size:14.5px">
+        左边是<b>真实运行的页面</b>，右边是<b>同一份源码</b>。点左边元素 → 右边跳到那段代码；
+        双击代码行改 → <code style="background:#f0eefb;padding:2px 8px;border-radius:8px">Ctrl+S</code> →
+        <b style="color:#2f9e7a">源码文件真的变了</b>。
+      </p>
+      <p style="font-size:14.5px;margin-top:8px">
+        所以"图"和"码"<b>不是两份东西，是同一份</b>——物理上就不存在对不上的可能。
+      </p>
+      <div class="kv" style="margin-top:14px">
+        <i>点元素跳代码</i><i>双击即编辑</i><i>改坏能撤销</i><i>自动备份 30 份</i>
+      </div>
+    </div>
+
+    <table style="margin-bottom:20px">
+      <thead><tr><th>维度</th><th>传统做法</th><th>用调试台</th></tr></thead>
+      <tbody>
+        <tr><td>出的"图"</td><td>设计稿（图片/原型），不能跑</td><td><b>就是能跑的源码</b></td></tr>
+        <tr><td>改一次要几步</td><td>改图 → 说明 → 开发再改码（两次）</td><td><b>改图 = 改码（一次）</b></td></tr>
+        <tr><td>图码一致性</td><td>永远对不上，靠人对齐</td><td><b>同一份文件，无对齐成本</b></td></tr>
+        <tr><td>交付物</td><td>图 + 码两份</td><td><b>一份</b></td></tr>
+      </tbody>
+    </table>
+
+    <!-- 特点二 -->
+    <div class="card clay" style="padding:26px 28px">
+      <h3 style="font-size:19px;margin-bottom:10px">🎖 特点二：不干扰多队长分工</h3>
+      <p style="font-size:14.5px">
+        <b>一个项目 = 一个调试台 = 一份源码 = 一个端口。</b>
+        小组队长分的是<b>需求确认范围</b>，不是环境副本——所以 3 个队长不会拉出 3 个版本。
+      </p>
+      <div class="grid g3" style="margin-top:16px">
+        <div class="card clay" style="padding:16px 18px">
+          <h3 style="font-size:14px">① 单一入口</h3>
+          <p style="font-size:12.5px">不管几个队长、几个 AI，大家看的是同一个页面、同一份源码</p>
+        </div>
+        <div class="card clay" style="padding:16px 18px">
+          <h3 style="font-size:14px">② 写租约兜底</h3>
+          <p style="font-size:12.5px">同一文件同一时刻只有一个 owner 在改，改 UI 也受租约约束</p>
+        </div>
+        <div class="card clay" style="padding:16px 18px">
+          <h3 style="font-size:14px">③ 安全编辑兜底</h3>
+          <p style="font-size:12.5px">谁改都只能改 UI 层；改逻辑一律转候选补丁，必须走任务书</p>
+        </div>
+      </div>
+      <p style="font-size:13.5px;margin-top:14px;color:var(--ink2)">
+        结果：<b style="color:#2f9e7a">队长越多，分的是"管哪块需求"，不是"各改一套"</b>——
+        环境永远只有一份，所以不会打架，也不会版本分裂。
+      </p>
+    </div>
+
+    <!-- 特点三：网格 + 量尺 -->
+    <div class="card clay" style="padding:26px 28px;margin-top:16px">
+      <h3 style="font-size:19px;margin-bottom:10px">📐 特点三：网格 + 量尺，把「往右一点」变成「往右 12px」</h3>
+      <p style="font-size:14.5px">
+        预览区左上角两个开关，都只做叠加层，<b>不改一行源码</b>：
+      </p>
+      <div class="grid g2" style="margin-top:14px">
+        <div class="card clay" style="padding:16px 18px">
+          <h3 style="font-size:14px">▦ 网格</h3>
+          <p style="font-size:12.5px">细格 <b>8px</b>（常见间距基数）、粗格 <b>80px</b>（大范围定位）的虚线格。
+            不挡点击，不影响原有"点元素跳代码"。</p>
+        </div>
+        <div class="card clay" style="padding:16px 18px">
+          <h3 style="font-size:14px">⌖ 量尺</h3>
+          <p style="font-size:12.5px"><b>点击即钉住</b>坐标：画红十字 + 标签，坐标冻结不动。
+            点第二下量出 <b>dx / dy / 距离</b>，点「复制」直接发给 AI。</p>
+        </div>
+      </div>
+      <p style="font-size:13px;margin-top:12px;color:var(--ink2)">
+        <b>为什么必须"点击钉住"</b>：早期做法是鼠标移动实时刷新坐标，手一抬数字就没了，根本记不住。
+      </p>
+
+      <div class="grid g2" style="margin-top:16px">
+        <div class="card clay" style="padding:16px 18px;background:linear-gradient(150deg,#fff,#fff5f5)">
+          <h3 style="font-size:13.5px;color:#b83b63">没有量尺（来回试三轮）</h3>
+          <p style="font-size:12.5px;line-height:1.9">
+            主理人：「这个按钮往右一点」<br>
+            AI：「往右多少？」<br>
+            主理人：「大概 20px？」<br>
+            → 改完还是不对，再往右点…<b style="color:#b83b63">三轮还没对</b>
+          </p>
+        </div>
+        <div class="card clay" style="padding:16px 18px;background:linear-gradient(150deg,#fff,#f0fff8)">
+          <h3 style="font-size:13.5px;color:#1f7a5c">有量尺（一次到位）</h3>
+          <p style="font-size:12.5px;line-height:1.9">
+            点住按钮 → 点「复制」→ 粘给 AI：<br>
+            <code style="background:#e8fff7;padding:1px 6px;border-radius:5px">点A：x=112 y=64　元素 a.btn</code><br>
+            主理人：「<code style="background:#e8fff7;padding:1px 6px;border-radius:5px">a.btn</code> 父内 left=112，改到 128」<br>
+            → <b style="color:#1f7a5c">一次对上</b>
+          </p>
+        </div>
+      </div>
+      <p style="font-size:12.5px;margin-top:12px;color:var(--ink2)">
+        为什么报「父内 left/top」而不只是屏幕坐标：改样式改的是它相对父元素的 left/top；
+        只给屏幕坐标，改完数字会跟着变，越改越乱。
+      </p>
+    </div>
+  </section>
+
+  <!-- 工具 -->
+  <section id="tools">
+    <div class="stitle"><span class="num">7</span><h2>配套工具（单文件，零依赖）</h2></div>
+    <p class="slead">复制走就能用，不用装库、不用打包。</p>
+
+    <div class="grid g2">
+      <div class="card clay"><h3>🖥 UI 调试台</h3>
+        <p>左边真实页面、右边源码；点元素跳代码，双击改，Ctrl+S 存。</p>
+        <div class="kv"><i>安全编辑模式</i><i>改坏能撤销</i><i>自动备份</i></div></div>
+      <div class="card clay"><h3>🚀 启动项目</h3>
+        <p>一条命令：先弹风格选型，再起调试台。</p>
+        <div class="kv"><i>自动找选型页</i><i>跨平台</i></div></div>
+      <div class="card clay"><h3>🎨 UI 风格选型</h3>
+        <p>12 种主流风格，CSS 自绘示例图，点卡选中 → 叠加暗黑 → 一键复制。</p>
+        <div class="kv"><i>离线可用</i><i>点选即用</i></div></div>
+      <div class="card clay"><h3>📋 问卷引擎</h3>
+        <p>换一段 MODEL 就换品类，自带冲突校验。</p>
+        <div class="kv"><i>勾「要」又勾「不要」会拦住</i></div></div>
+    </div>
+  </section>
+
+  <!-- 边界 -->
+  <section>
+    <div class="stitle"><span class="num">8</span><h2>边界（诚实说明）</h2></div>
+    <div class="grid g2">
+      <div class="card clay"><h3>不适合</h3>
+        <p>· 想"一句话生成上线"的人<br>· 已有成熟研发流程的大公司<br>· 只需要改几个字的人</p></div>
+      <div class="card clay"><h3>它保证什么</h3>
+        <p>不保证一次做对。<br>但保证：<b>每次改错都能看见、能退回、能查清是谁的锅</b>。</p></div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta">
+    <h2>三步开始</h2>
+    <p>① 读 SKILL.md（3 分钟） ② 跑启动器选个风格 ③ 拿真项目从 S-1 走到 S1</p>
+    <code>python 02_工具/启动项目.py --dir "你的项目" --port 8792</code>
+  </div>
+
+  <footer>菜鸟开发猿（原名 dev-workflow-1n1n） · 1 主理人 + N 小组队长 + N AI 通用开发流程 v4.61 ｜ 约 530 KB（含本版改动说明；不含备份）｜ 示例数据均为虚构，仅用于演示</footer>
+</div>
+
+</body>
+</html>

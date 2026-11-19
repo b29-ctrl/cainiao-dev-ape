@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>校园一卡通 · S2 效果图（黏土风 · 第 1 批）</title>
+<style>
+  :root{--bg:#f3f1fb;--ink:#3d3654;--ink2:#6f688c;
+    --clay-shadow:0 16px 34px rgba(120,110,170,.16);
+    --clay-in:inset 0 -7px 14px rgba(150,140,200,.16), inset 0 7px 14px rgba(255,255,255,.95);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:14px/1.55 "Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--bg);color:var(--ink);
+       height:100vh;display:flex;gap:18px;padding:18px;overflow:hidden}
+  .clay{background:#fff;border-radius:26px;box-shadow:var(--clay-shadow),var(--clay-in)}
+
+  /* 侧栏 */
+  .side{width:104px;padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:14px;flex:none}
+  .logo{width:56px;height:56px;border-radius:20px;background:linear-gradient(145deg,#b7f0dd,#7fd9bd);
+        box-shadow:0 8px 18px rgba(90,200,170,.35),inset 0 -4px 8px rgba(40,150,120,.18),inset 0 4px 8px #fff;
+        display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:6px}
+  .nav{display:flex;flex-direction:column;gap:10px;width:100%}
+  .nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:11px 4px;border-radius:18px;
+         border:0;background:transparent;color:var(--ink2);font:inherit;font-size:11px;cursor:pointer;width:100%}
+  .nav button .ico{width:34px;height:34px;border-radius:13px;background:#f0eefb;
+        box-shadow:inset 0 -3px 6px rgba(150,140,200,.14),inset 0 3px 6px #fff;
+        display:flex;align-items:center;justify-content:center;font-size:15px}
+  .nav button.on{background:linear-gradient(145deg,#e8fff7,#c9f6e6);color:#1f7a5c;font-weight:700;
+        box-shadow:0 8px 16px rgba(90,200,170,.22),inset 0 -4px 8px rgba(60,170,140,.15),inset 0 4px 8px #fff}
+  .nav button.on .ico{background:#fff}
+  .nav button[disabled]{opacity:.42;cursor:not-allowed}
+
+  .main{flex:1;display:flex;flex-direction:column;gap:16px;min-width:0;overflow:hidden}
+  .top{display:flex;align-items:center;gap:14px;padding:14px 22px;flex:none}
+  .top h1{font-size:19px;font-weight:700}
+  .crumb{color:var(--ink2);font-size:12.5px}
+  .grow{flex:1}
+  .search{width:230px;display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:16px;background:#f5f3fd;
+          box-shadow:inset 0 3px 7px rgba(150,140,200,.13),inset 0 -3px 7px #fff}
+  .search input{border:0;background:transparent;outline:0;font:inherit;font-size:13px;width:100%;color:var(--ink)}
+  .me{display:flex;align-items:center;gap:9px;padding:6px 14px 6px 6px;border-radius:18px;background:#f5f3fd;box-shadow:var(--clay-in)}
+  .ava{width:32px;height:32px;border-radius:12px;background:linear-gradient(145deg,#ffe1a8,#ffc86b);
+       box-shadow:0 5px 12px rgba(230,170,60,.35),inset 0 -3px 6px rgba(200,140,40,.2),inset 0 3px 6px #fff}
+
+  /* 页面容器 */
+  .pages{flex:1;overflow:auto;min-height:0;padding-right:2px}
+  .page{display:none;flex-direction:column;gap:16px}
+  .page.active{display:flex}
+
+  /* 通用 */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .kpi{padding:18px 20px;position:relative;overflow:hidden}
+  .kpi .lab{font-size:12.5px;color:var(--ink2)}
+  .kpi .num{font-size:26px;font-weight:800;letter-spacing:-.5px;margin:6px 0 2px}
+  .kpi .sub{font-size:11.5px;color:var(--ink2)}
+  .kpi::after{content:"";position:absolute;right:-26px;top:-26px;width:86px;height:86px;border-radius:50%;
+       box-shadow:inset 0 -6px 12px rgba(0,0,0,.05),inset 0 6px 12px #fff}
+  .k1{background:linear-gradient(150deg,#fff,#e9fbf4)} .k1::after{background:#c9f6e6}
+  .k2{background:linear-gradient(150deg,#fff,#fff1f6)} .k2::after{background:#ffd3e3}
+  .k3{background:linear-gradient(150deg,#fff,#fff8e6)} .k3::after{background:#ffe6ac}
+  .k4{background:linear-gradient(150deg,#fff,#edf5ff)} .k4::after{background:#cbe4ff}
+
+  .cols{display:grid;grid-template-columns:1.05fr 1.3fr;gap:16px}
+  .panel{padding:18px 20px}
+  .ptitle{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .ptitle b{font-size:15px}
+  .ptitle .tag{font-size:11px;color:var(--ink2);padding:2px 10px;border-radius:12px;background:#f3f1fb}
+
+  .donut{width:168px;height:168px;border-radius:50%;margin:6px auto 14px;position:relative;
+    background:conic-gradient(#7fd9bd 0 62%,#ffb3cf 62% 83%,#a8d8ff 83% 94%,#ffdf8e 94% 100%);
+    box-shadow:0 14px 30px rgba(120,110,170,.18),inset 0 -6px 12px rgba(0,0,0,.06),inset 0 6px 12px rgba(255,255,255,.7)}
+  .donut::after{content:"";position:absolute;inset:34px;border-radius:50%;background:#fff;
+    box-shadow:inset 0 -6px 12px rgba(150,140,200,.12),inset 0 6px 12px #fff}
+  .donut .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2}
+  .donut .c b{font-size:20px}.donut .c span{font-size:11px;color:var(--ink2)}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:12.5px}
+  .legend div{display:flex;align-items:center;gap:8px}
+  .dot{width:11px;height:11px;border-radius:5px;box-shadow:inset 0 -2px 4px rgba(0,0,0,.12),inset 0 2px 4px #fff}
+
+  .rows{display:flex;flex-direction:column;gap:9px}
+  .row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:18px;background:#faf9ff;
+       box-shadow:inset 0 -4px 9px rgba(150,140,200,.10),inset 0 4px 9px #fff}
+  .row .who{width:34px;height:34px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+       font-size:12px;font-weight:700;color:#2a6b58;background:#d3f7ea;flex:none;
+       box-shadow:inset 0 -3px 6px rgba(60,170,140,.15),inset 0 3px 6px #fff}
+  .row .txt{flex:1;min-width:0}.row .txt b{font-size:13px}.row .txt span{display:block;font-size:11.5px;color:var(--ink2)}
+  .row .amt{font-weight:800;color:#2f9e7a}.row .tm{font-size:11.5px;color:var(--ink2);width:52px;text-align:right}
+
+  .bottom{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+  .devs{display:flex;flex-wrap:wrap;gap:10px}
+  .dev{display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:16px;background:#faf9ff;font-size:12.5px;
+       box-shadow:inset 0 -4px 9px rgba(150,140,200,.10),inset 0 4px 9px #fff}
+  .st{width:9px;height:9px;border-radius:50%}
+  .on{background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.18)}
+  .off{background:#f87171;box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+  .todos{display:flex;flex-direction:column;gap:9px}
+  .todo{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:16px;font-size:12.5px;
+        background:linear-gradient(150deg,#fff,#f4f1ff);box-shadow:inset 0 -4px 9px rgba(150,140,200,.10),inset 0 4px 9px #fff}
+  .todo .n{margin-left:auto;font-weight:800;color:#8b7cd6}
+  .btn{padding:9px 18px;border-radius:15px;border:0;font:inherit;font-size:12.5px;font-weight:700;color:#256b57;
+       background:linear-gradient(150deg,#c9f6e6,#8fe0c8);cursor:pointer;
+       box-shadow:0 9px 18px rgba(90,200,170,.28),inset 0 -4px 8px rgba(40,150,120,.2),inset 0 4px 8px #fff}
+  .btn.ghost{background:#f7f5ff;color:#5b5478;box-shadow:inset 0 -4px 9px rgba(150,140,200,.12),inset 0 4px 9px #fff}
+
+  /* 卡务工具条 + 表格 */
+  .tools{display:flex;align-items:center;gap:10px;padding:14px 20px;flex-wrap:wrap}
+  .chip{padding:8px 16px;border-radius:15px;font-size:12.5px;color:#5b5478;background:#f7f5ff;cursor:pointer;
+        box-shadow:inset 0 -4px 9px rgba(150,140,200,.12),inset 0 4px 9px #fff;display:flex;align-items:center;gap:7px}
+  .chip.on{background:linear-gradient(145deg,#eafff8,#c6f5e6);color:#1c7a5b;font-weight:700;
+        box-shadow:0 9px 18px rgba(90,200,170,.22),inset 0 -4px 8px rgba(40,150,120,.16),inset 0 4px 8px #fff}
+  .chip b{font-size:11px;opacity:.75;font-weight:600}
+  .tablewrap{padding:6px 20px 18px}
+  table{width:100%;border-collapse:separate;border-spacing:0 9px}
+  thead th{font-size:11.5px;color:var(--ink2);font-weight:600;text-align:left;padding:0 14px 2px}
+  tbody tr{background:#faf9ff}
+  tbody td{padding:13px 14px;font-size:13px;box-shadow:inset 0 -4px 9px rgba(150,140,200,.10),inset 0 4px 9px #fff}
+  tbody td:first-child{border-radius:18px 0 0 18px}
+  tbody td:last-child{border-radius:0 18px 18px 0}
+  .cardno{font-family:Consolas,monospace;font-size:12.5px;color:#5b5478}
+  .name{font-weight:700}.sub{display:block;font-size:11.5px;color:var(--ink2);font-weight:400}
+  .money{font-weight:800;font-variant-numeric:tabular-nums}.money.low{color:#e0669a}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:13px;font-size:11.5px;font-weight:700}
+  .p-ok{background:#d9f8ec;color:#1c7a5b}.p-lost{background:#ffe0e8;color:#b83b63}
+  .p-freeze{background:#e6e1ff;color:#5c4fb8}.p-off{background:#eeeaf7;color:#8b83a8}
+  .ops{display:flex;gap:8px}
+  .op{padding:6px 12px;border-radius:12px;font-size:11.5px;color:#5b5478;background:#fff;cursor:pointer;
+      box-shadow:0 5px 12px rgba(120,110,170,.12),inset 0 -3px 6px rgba(150,140,200,.10),inset 0 3px 6px #fff}
+  .op.warn{color:#b83b63}
+  .foot{display:flex;align-items:center;gap:12px;padding:10px 4px 0;font-size:12.5px;color:var(--ink2)}
+  .page-nav{margin-left:auto;display:flex;gap:8px}
+  .page-nav span{padding:7px 14px;border-radius:13px;background:#f7f5ff;
+      box-shadow:inset 0 -4px 9px rgba(150,140,200,.12),inset 0 4px 9px #fff;cursor:pointer}
+  .page-nav span.on{background:linear-gradient(145deg,#eafff8,#c6f5e6);color:#1c7a5b;font-weight:700}
+
+  .banner{padding:12px 18px;font-size:12.5px;color:#7a6f45;background:linear-gradient(150deg,#fffdf3,#fff6d9);
+          border-radius:20px;box-shadow:inset 0 -5px 10px rgba(210,180,90,.12),inset 0 5px 10px #fff}
+</style>
+</head>
+<body>
+
+<aside class="side clay">
+  <div class="logo">💳</div>
+  <nav class="nav" id="nav">
+    <button class="on" data-p="home"><span class="ico">▦</span>总览</button>
+    <button data-p="card"><span class="ico">💳</span>卡务</button>
+    <button data-p="consume"><span class="ico">🛒</span>消费</button>
+    <button disabled><span class="ico">🚪</span>门禁</button>
+    <button disabled><span class="ico">💧</span>水控</button>
+    <button disabled><span class="ico">📊</span>报表</button>
+    <button disabled><span class="ico">⚙</span>设置</button>
+  </nav>
+</aside>
+
+<main class="main">
+  <header class="top clay">
+    <div>
+      <h1 id="ttl">校园一卡通 · 总览</h1>
+      <div class="crumb" id="crumb">首页 / 总览　·　2026-11-08 星期三</div>
+    </div>
+    <div class="grow"></div>
+    <div class="search"><span>🔍</span><input placeholder="搜学号 / 姓名 / 卡号"></div>
+    <div class="me"><div class="ava"></div><span>张老师</span></div>
+  </header>
+
+  <div class="pages">
+
+    <!-- ===== 总览 ===== -->
+    <section class="page active" id="p-home">
+      <div class="banner">S2 效果图 · 第 1 批（骨架 + 3 个核心板块）· 数据为假数据，仅用于看结构与风格</div>
+      <div class="kpis">
+        <div class="kpi clay k1"><div class="lab">在用卡</div><div class="num">8,642</div><div class="sub">今日新增 12 张</div></div>
+        <div class="kpi clay k2"><div class="lab">今日消费</div><div class="num">¥58,420</div><div class="sub">12,847 笔 · 笔均 ¥4.55</div></div>
+        <div class="kpi clay k3"><div class="lab">在线终端</div><div class="num">34 / 36</div><div class="sub">2 台离线待排查</div></div>
+        <div class="kpi clay k4"><div class="lab">待处理</div><div class="num">3</div><div class="sub">补卡 2 · 挂失 1</div></div>
+      </div>
+      <div class="cols">
+        <div class="panel clay">
+          <div class="ptitle"><b>今日消费构成</b><span class="tag">实时</span></div>
+          <div class="donut"><div class="c"><b>¥58,420</b><span>今日总额</span></div></div>
+          <div class="legend">
+            <div><i class="dot" style="background:#7fd9bd"></i>食堂 62%</div>
+            <div><i class="dot" style="background:#ffb3cf"></i>超市 21%</div>
+            <div><i class="dot" style="background:#a8d8ff"></i>水控 11%</div>
+            <div><i class="dot" style="background:#ffdf8e"></i>其他 6%</div>
+          </div>
+        </div>
+        <div class="panel clay">
+          <div class="ptitle"><b>最近交易</b><span class="tag">最近 5 笔</span></div>
+          <div class="rows">
+            <div class="row"><div class="who">李</div><div class="txt"><b>李思远 · 2023 级计科</b><span>第一食堂 · 3 号窗口</span></div><div class="amt">-¥8.50</div><div class="tm">12:04</div></div>
+            <div class="row"><div class="who">王</div><div class="txt"><b>王雨桐 · 2024 级英语</b><span>校园超市 · 收银台 2</span></div><div class="amt">-¥23.00</div><div class="tm">11:58</div></div>
+            <div class="row"><div class="who">陈</div><div class="txt"><b>陈皓 · 2022 级机械</b><span>3 号宿舍楼 · 热水充值</span></div><div class="amt">-¥50.00</div><div class="tm">11:41</div></div>
+            <div class="row"><div class="who">刘</div><div class="txt"><b>刘欣然 · 2025 级法学</b><span>第二食堂 · 1 号窗口</span></div><div class="amt">-¥6.00</div><div class="tm">11:35</div></div>
+            <div class="row"><div class="who">赵</div><div class="txt"><b>赵一鸣 · 2023 级自动化</b><span>图书馆门禁 · 入馆</span></div><div class="amt" style="color:#8b7cd6">通行</div><div class="tm">11:22</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom">
+        <div class="panel clay">
+          <div class="ptitle"><b>终端状态</b><span class="tag">34 在线 / 2 离线</span></div>
+          <div class="devs">
+            <div class="dev"><i class="st on"></i>第一食堂 POS-03</div>
+            <div class="dev"><i class="st on"></i>第二食堂 POS-01</div>
+            <div class="dev"><i class="st on"></i>校园超市 POS-02</div>
+            <div class="dev"><i class="st on"></i>3 号宿舍水控</div>
+            <div class="dev"><i class="st on"></i>图书馆门禁</div>
+            <div class="dev"><i class="st off"></i>体育馆门禁（离线 42 分钟）</div>
+            <div class="dev"><i class="st off"></i>5 号宿舍水控（离线 1 小时）</div>
+          </div>
+        </div>
+        <div class="panel clay">
+          <div class="ptitle"><b>待处理</b><span class="tag">3 项</span></div>
+          <div class="todos">
+            <div class="todo">补卡申请 · 王雨桐（卡损坏）<span class="n">2</span></div>
+            <div class="todo">挂失申请 · 陈皓（卡片丢失）<span class="n">1</span></div>
+            <div class="todo">离线终端待排查 · 体育馆门禁<span class="n">!</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 卡务 ===== -->
+    <section class="page" id="p-card">
+      <div class="tools clay">
+        <div class="chip on">全部 <b>8,642</b></div>
+        <div class="chip">正常 <b>8,391</b></div>
+        <div class="chip">挂失 <b>128</b></div>
+        <div class="chip">冻结 <b>96</b></div>
+        <div class="chip">已退卡 <b>27</b></div>
+        <div class="grow"></div>
+        <button class="btn">＋ 发卡</button>
+        <button class="btn ghost">批量充值</button>
+        <button class="btn ghost">导出 Excel</button>
+      </div>
+      <div class="tablewrap clay">
+        <table>
+          <thead><tr>
+            <th style="width:150px">卡号</th><th>学号 / 姓名</th><th style="width:120px">学院</th>
+            <th style="width:96px">状态</th><th style="width:100px">余额</th><th style="width:170px">最近使用</th><th style="width:180px">操作</th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="cardno">8801 2023 0201</td><td><b class="name">李思远</b><span class="sub">2023110201</span></td><td>计算机学院</td><td><span class="pill p-ok">正常</span></td><td class="money">¥286.50</td><td>今天 12:04<span class="sub">第一食堂</span></td><td class="ops"><span class="op">详情</span><span class="op warn">挂失</span></td></tr>
+            <tr><td class="cardno">8801 2024 1523</td><td><b class="name">王雨桐</b><span class="sub">2024150233</span></td><td>外国语学院</td><td><span class="pill p-ok">正常</span></td><td class="money low">¥52.00</td><td>今天 11:58<span class="sub">校园超市</span></td><td class="ops"><span class="op">详情</span><span class="op warn">挂失</span></td></tr>
+            <tr><td class="cardno">8801 2022 0804</td><td><b class="name">陈皓</b><span class="sub">2022080417</span></td><td>机械工程学院</td><td><span class="pill p-lost">挂失</span></td><td class="money">¥18.00</td><td>昨天 17:22<span class="sub">3 号宿舍水控</span></td><td class="ops"><span class="op">详情</span><span class="op">补卡</span></td></tr>
+            <tr><td class="cardno">8801 2025 0111</td><td><b class="name">刘欣然</b><span class="sub">2025011132</span></td><td>法学院</td><td><span class="pill p-ok">正常</span></td><td class="money">¥431.20</td><td>今天 11:35<span class="sub">第二食堂</span></td><td class="ops"><span class="op">详情</span><span class="op warn">挂失</span></td></tr>
+            <tr><td class="cardno">8801 2023 1052</td><td><b class="name">赵一鸣</b><span class="sub">2023110528</span></td><td>自动化学院</td><td><span class="pill p-freeze">冻结</span></td><td class="money low">¥0.00</td><td>3 天前<span class="sub">图书馆门禁</span></td><td class="ops"><span class="op">详情</span><span class="op">解冻</span></td></tr>
+            <tr><td class="cardno">8801 2023 1132</td><td><b class="name">孙悦</b><span class="sub">2022120388</span></td><td>经济管理学院</td><td><span class="pill p-ok">正常</span></td><td class="money">¥97.60</td><td>今天 11:02<span class="sub">校园超市</span></td><td class="ops"><span class="op">详情</span><span class="op warn">挂失</span></td></tr>
+            <tr><td class="cardno">8801 2022 0288</td><td><b class="name">吴凡</b><span class="sub">2022080265</span></td><td>机械工程学院</td><td><span class="pill p-off">已退卡</span></td><td class="money low">¥0.00</td><td>2026-09-01<span class="sub">毕业退卡</span></td><td class="ops"><span class="op">详情</span></td></tr>
+          </tbody>
+        </table>
+        <div class="foot">
+          <span>显示第 1–7 条，共 8,642 条</span>
+          <div class="page-nav"><span>上一页</span><span class="on">1</span><span>2</span><span>3</span><span>…</span><span>下一页</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 消费 ===== -->
+    <section class="page" id="p-consume">
+      <div class="kpis">
+        <div class="kpi clay k1"><div class="lab">今日流水</div><div class="num">12,847</div><div class="sub">笔</div></div>
+        <div class="kpi clay k2"><div class="lab">今日金额</div><div class="num">¥58,420</div><div class="sub">笔均 ¥4.55</div></div>
+        <div class="kpi clay k3"><div class="lab">异常交易</div><div class="num">3</div><div class="sub">余额不足 2 · 重复扣款 1</div></div>
+        <div class="kpi clay k4"><div class="lab">退款</div><div class="num">¥126.00</div><div class="sub">今日 5 笔</div></div>
+      </div>
+      <div class="tools clay">
+        <div class="chip on">全部 <b>12,847</b></div>
+        <div class="chip">食堂 <b>7,965</b></div>
+        <div class="chip">超市 <b>2,698</b></div>
+        <div class="chip">水控 <b>1,413</b></div>
+        <div class="grow"></div>
+        <button class="btn ghost">导出流水</button>
+      </div>
+      <div class="tablewrap clay">
+        <table>
+          <thead><tr>
+            <th style="width:88px">时间</th><th>学号 / 姓名</th><th style="width:150px">地点</th>
+            <th style="width:100px">金额</th><th style="width:110px">余额</th><th style="width:120px">状态</th><th style="width:150px">操作</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>12:04</td><td><b class="name">李思远</b><span class="sub">2023110201</span></td><td>第一食堂 · 3 号窗口</td><td class="money" style="color:#b83b63">-¥8.50</td><td class="money">¥286.50</td><td><span class="pill p-ok">成功</span></td><td class="ops"><span class="op">详情</span><span class="op warn">退款</span></td></tr>
+            <tr><td>11:58</td><td><b class="name">王雨桐</b><span class="sub">2024150233</span></td><td>校园超市 · 收银台 2</td><td class="money" style="color:#b83b63">-¥23.00</td><td class="money">¥52.00</td><td><span class="pill p-ok">成功</span></td><td class="ops"><span class="op">详情</span><span class="op warn">退款</span></td></tr>
+            <tr><td>11:41</td><td><b class="name">陈皓</b><span class="sub">2022080417</span></td><td>3 号宿舍 · 热水充值</td><td class="money" style="color:#2f9e7a">+¥50.00</td><td class="money">¥18.00</td><td><span class="pill p-ok">成功</span></td><td class="ops"><span class="op">详情</span></td></tr>
+            <tr><td>11:35</td><td><b class="name">刘欣然</b><span class="sub">2025011132</span></td><td>第二食堂 · 1 号窗口</td><td class="money" style="color:#b83b63">-¥6.00</td><td class="money">¥431.20</td><td><span class="pill p-ok">成功</span></td><td class="ops"><span class="op">详情</span><span class="op warn">退款</span></td></tr>
+            <tr><td>11:29</td><td><b class="name">赵一鸣</b><span class="sub">2023110528</span></td><td>校园超市 · 收银台 1</td><td class="money" style="color:#b83b63">-¥12.00</td><td class="money">¥0.00</td><td><span class="pill p-lost">余额不足</span></td><td class="ops"><span class="op">详情</span></td></tr>
+            <tr><td>11:22</td><td><b class="name">孙悦</b><span class="sub">2022120388</span></td><td>第一食堂 · 2 号窗口</td><td class="money" style="color:#b83b63">-¥9.00</td><td class="money">¥97.60</td><td><span class="pill p-freeze">重复扣款待核</span></td><td class="ops"><span class="op">详情</span><span class="op warn">冲正</span></td></tr>
+          </tbody>
+        </table>
+        <div class="foot">
+          <span>显示第 1–6 条，共 12,847 条</span>
+          <div class="page-nav"><span>上一页</span><span class="on">1</span><span>2</span><span>3</span><span>…</span><span>下一页</span></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+var TITLES = {
+  home:    ['校园一卡通 · 总览', '首页 / 总览'],
+  card:    ['卡务管理',          '首页 / 卡务'],
+  consume: ['消费流水',          '首页 / 消费']
+};
+var nav = document.getElementById('nav');
+nav.addEventListener('click', function (e) {
+  var btn = e.target.closest('button[data-p]');
+  if (!btn || btn.disabled) return;
+  var p = btn.getAttribute('data-p');
+  Array.prototype.forEach.call(nav.querySelectorAll('button'), function (b) {
+    b.classList.toggle('on', b === btn);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.page'), function (s) {
+    s.classList.toggle('active', s.id === 'p-' + p);
+  });
+  document.getElementById('ttl').textContent = TITLES[p][0];
+  document.getElementById('crumb').textContent = TITLES[p][1] + '　·　2026-11-08 星期三';
+  document.querySelector('.pages').scrollTop = 0;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1447 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<!-- 技能包当前版本：v4.60（文件内 v4.52 注释为功能引入标记，属历史登记） -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S-1 环境初始化</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:15px/1.65 "Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:#f5f6f8;color:#1f2328;padding:24px 16px 100px}
+  .wrap{max-width:820px;margin:0 auto}
+  h1{font-size:24px}
+  .lead{color:#6b7280;font-size:13px;margin:6px 0 20px}
+  .step{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:20px;padding:3px 12px;font-size:12px;margin:20px 0 10px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  .card h2{font-size:15.5px;margin-bottom:4px}
+  .card .why{color:#b45309;font-size:12.5px;margin-bottom:10px}
+  .opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #eef0f3;border-radius:9px;margin-bottom:7px;cursor:pointer}
+  .opt:hover{background:#f9fafb}
+  .opt input{margin-top:3px;width:16px;height:16px;flex:none}
+  .opt small{display:block;color:#8b95a5;font-size:12px;margin-top:2px}
+  .tag{display:inline-block;font-size:10.5px;border-radius:5px;padding:1px 6px;margin-left:6px;background:#ecfdf5;color:#047857}
+  .tag.rec{background:#eff6ff;color:#1d4ed8}
+  /* ① 模型：PRO 放大主推，普通降级 */
+  .modelhero{display:flex;gap:14px;align-items:flex-start;padding:20px 22px;border-radius:14px;cursor:pointer;
+    background:linear-gradient(150deg,#2563eb,#1d4ed8);color:#fff;
+    box-shadow:0 12px 26px rgba(37,99,235,.32);margin-bottom:12px;border:2px solid #1d4ed8;
+    transition:transform .12s, box-shadow .12s}
+  .modelhero:hover{transform:translateY(-1px);box-shadow:0 16px 30px rgba(37,99,235,.38)}
+  .modelhero input{margin-top:5px;width:20px;height:20px;flex:none;accent-color:#fff}
+  .modelhero .mh-body{flex:1}
+  .modelhero .mh-title{font-size:20px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
+  .modelhero .mh-badge{font-size:11.5px;font-weight:700;background:#fff;color:#1d4ed8;border-radius:20px;padding:3px 12px}
+  .modelhero .mh-reasons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .modelhero .mh-reasons span{font-size:12px;background:rgba(255,255,255,.18);border-radius:8px;padding:3px 10px}
+  .modelalt{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:11px;cursor:pointer;
+    background:#fafafa;border:1px dashed #d1d5db;opacity:.85}
+  .modelalt:hover{opacity:1;background:#f5f5f5}
+  .modelalt input{margin-top:3px;width:15px;height:15px;flex:none}
+  .modelalt .ma-title{font-size:13.5px;font-weight:600;color:#6b7280;display:flex;align-items:center;gap:8px}
+  .modelalt .ma-tag{font-size:10.5px;background:#fee2e2;color:#b91c1c;border-radius:5px;padding:1px 7px;font-weight:700}
+  .modelalt .ma-note{font-size:12px;color:#9ca3af;margin-top:4px;line-height:1.6}
+  .modelwarn{margin-top:12px;padding:12px 14px;border-radius:10px;
+    background:#fef2f2;border:1px solid #fecaca;color:#7f1d1d;font-size:12.5px;line-height:1.7}
+
+  .count{display:flex;gap:8px;flex-wrap:wrap}
+  .count label{padding:10px 20px;border:1px solid #e5e7eb;border-radius:10px;cursor:pointer;font-size:14px;background:#fff}
+  .count input{margin-right:7px}
+  .count label:has(input:checked){border-color:#2563eb;background:#eff6ff;color:#1d4ed8;font-weight:600}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{border:1px solid #eef0f3;padding:7px 9px;text-align:left;vertical-align:middle}
+  th{background:#f8fafc;font-size:12px;color:#374151;font-weight:600}
+  td input.nm{width:100%;border:1px solid #d1d5db;border-radius:6px;padding:4px 7px;font:inherit;font-size:12.5px}
+  td.fixed{color:#6b7280;font-size:12px}
+  .rolegrp{font-weight:700;font-size:12.5px}
+  .g-a{color:#1d4ed8}.g-b{color:#b45309}.g-c{color:#5c4fb8}.g-v{color:#0f766e}
+  .dir{width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:9px;font:inherit;font-size:13.5px}
+  #err{display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:12px}
+  #err b{color:#b91c1c}
+  #err ul{margin:8px 0 0 18px;font-size:13px;color:#7f1d1d}
+  #ok{display:none;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#047857}
+  #out{width:100%;height:300px;padding:12px;border:1px solid #d1d5db;border-radius:10px;
+       font:12.5px/1.6 ui-monospace,Consolas,monospace;display:none}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;padding:12px;display:flex;gap:10px;justify-content:center}
+  button{font:inherit;padding:10px 22px;border-radius:10px;border:1px solid #d1d5db;background:#fff;cursor:pointer}
+  button.main{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:600}
+  .hint{color:#6b7280;font-size:12.5px;margin-top:8px}
+  /* 上传 ai-roster/v1：预览、校验、容量建议 */
+  .upload-card{border:2px dashed #93c5fd;background:#f8fbff}
+  .upload-card input[type=file]{font:inherit;font-size:13px;width:100%}
+  .roster-preview{margin-top:12px;font-size:12.5px;line-height:1.7}
+  .roster-preview table{margin-top:8px;font-size:12px}
+  .roster-preview .bad{color:#b91c1c;font-weight:600}
+  .roster-preview .warn{color:#b45309}
+  .roster-preview .ok{color:#047857}
+  .roster-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+  .roster-actions button{padding:7px 14px;font-size:12.5px}
+  .roster-meta{color:#6b7280;font-size:12px;margin-top:6px}
+  /* v4.52：自定义 AI 数量 + 自动岗位分配 */
+  .custom-count{display:flex;gap:6px;align-items:center;padding:8px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;font-size:14px}
+  .custom-count label{display:flex;gap:6px;align-items:center;cursor:pointer;padding:0;border:0;background:none;font-size:14px}
+  .custom-count input[type=number]{width:88px;padding:6px 8px;border:1px solid #d1d5db;border-radius:7px;font:inherit;font-size:13.5px}
+  .hint.bad{color:#b91c1c;font-weight:600}
+  .hint.ok{color:#047857}
+  .alloc-lead{font-size:13px;color:#374151;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:9px;padding:10px 12px;margin-bottom:10px}
+  .alloc-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .alloc-row input[type=number]{width:90px;padding:6px 8px;border:1px solid #d1d5db;border-radius:7px;font:inherit;font-size:13.5px}
+  .alloc-row button{padding:7px 14px;font-size:12.5px}
+  .alloc-sec{margin-top:14px}
+  .alloc-sec h3{font-size:13.5px;margin-bottom:6px;color:#1f2937}
+  .alloc-sec table{font-size:12.5px}
+  .alloc-sec td input.nm{padding:3px 6px}
+  .alloc-warn{background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:9px 12px;font-size:12.5px;color:#92400e;margin-top:8px}
+  .alloc-ok{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:9px;padding:9px 12px;font-size:12.5px;color:#047857;margin-top:8px}
+  #allocOut{width:100%;height:220px;padding:10px;border:1px solid #d1d5db;border-radius:9px;font:12px/1.6 ui-monospace,Consolas,monospace;display:block;margin-top:8px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>S-1 环境初始化</h1>
+  <p class="lead">四问一次勾完 → 生成 <b>00_环境.md</b> → 粘进项目目录。主理人永远 1 个，AI 至少 3 个。</p>
+
+  <div id="err"><b>不能生成，先解决：</b><ul id="errlist"></ul></div>
+  <div id="ok">已生成 00_环境.md 内容，按「复制」带走，粘进项目目录的 00_环境.md</div>
+
+  <!-- 上传 AI 岗位配置（ai-roster/v1）：只在本机 JS 解析，不上传网络 -->
+  <div class="card upload-card" id="uploadCard">
+    <h2>上传 AI 岗位配置（ai-roster.json）</h2>
+    <p class="why">来自 AI群聊平台「导出 AI 岗位配置」。选完文件立即预览解析与校验结果，<b>不会直接生成</b>；不上传时下面 ①–⑤ 四问与原来完全一致。</p>
+    <input type="file" id="rosterFile" accept=".json,application/json">
+    <div class="roster-preview" id="rosterPreview"><span class="hint">未上传名单。</span></div>
+  </div>
+
+  <!-- ① 模型 -->
+  <span class="step">① 用什么模型　<span style="color:#b91c1c;font-weight:700">重要</span></span>
+  <div class="card" style="border:2px solid #2563eb;background:linear-gradient(160deg,#fff,#f0f7ff)">
+    <h2 style="font-size:19px">建议用 <span style="color:#1d4ed8">PRO 模式</span> 立项</h2>
+    <p class="why" style="font-size:13.5px">
+      立项前期要干三件"最吃模型能力"的事：<b>搜真实对标产品</b>、<b>复述确认需求</b>、<b>找需求前后矛盾</b>。
+      普通模型在这三件事上最容易<b>编造</b>——而这里编出来的东西，会一路传到说明书、方案、代码里，<b>越往后改越贵</b>。
+    </p>
+
+    <!-- PRO 大按钮 -->
+    <label class="modelhero" id="heroPRO">
+      <input type="radio" name="model" value="PRO" checked>
+      <div class="mh-body">
+        <div class="mh-title">PRO 模式 <span class="mh-badge">✓ 建议选这个</span></div>
+        <div class="mh-reasons">
+          <span>✓ 对标产品不容易编</span>
+          <span>✓ 需求复述更准</span>
+          <span>✓ 前后矛盾找得出来</span>
+          <span>✓ 说明书一次成型少返工</span>
+        </div>
+      </div>
+    </label>
+
+    <!-- 普通：缩小、降级 -->
+    <label class="modelalt" id="altNormal">
+      <input type="radio" name="model" value="普通">
+      <div>
+        <div class="ma-title">普通模式<span class="ma-tag">不推荐</span></div>
+        <div class="ma-note">能用，但 S0–S1 产出会标「模型：普通」，<b>所有对标项必须人工复核链接</b>。省下的时间通常会在返工里还回去。</div>
+      </div>
+    </label>
+
+    <div id="modelWarn" style="display:none" class="modelwarn">
+      ⚠️ 你选了<b>普通模式</b>。继续的话：① 说明书每章都要你亲自核一遍；② 所有"对标产品"必须打开链接确认真实存在；③ 产出会带「模型：普通」标记，方案阶段会被门①重点查。
+    </div>
+  </div>
+
+  <!-- ② AI 数量 -->
+  <span class="step">② 有几个 AI（主理人固定 1 个）</span>
+  <div class="card">
+    <h2>除你之外，有几个可用的 AI？</h2>
+    <p class="why">硬底线 1 主理人 + 至少 3 个 AI。少于 3 个只能进"非标准辅助模式"，不能签正式门禁。</p>
+    <div class="count" id="countBox">
+      <label><input type="radio" name="cnt" value="3" checked>3 个 <small>底线</small></label>
+      <label><input type="radio" name="cnt" value="4">4 个</label>
+      <label><input type="radio" name="cnt" value="5">5 个</label>
+      <div class="custom-count">
+        <label><input type="radio" name="cnt" value="custom" id="cntCustomRadio">其他：</label>
+        <input type="number" id="cntCustom" min="3" max="30" step="1" placeholder="3–30"><span>个</span>
+      </div>
+    </div>
+    <p class="hint" id="cntHint"></p>
+    <p class="hint">自定义整数 3–30；6–12 档仍沿用原有 A/I/B/C 席位命名，13–30 由下方「自动岗位分配」决定命名与分组，不在页面手填。上传名单人数超过当前档位时不会截断，会提示切档。</p>
+  </div>
+
+  <!-- ③ 角色分配 -->
+  <span class="step">③ 角色分配（按数量自动给方案，你填"哪个 AI 顶这个位"）</span>
+  <div class="card" id="roleCard">
+    <h2>谁顶哪个席位</h2>
+    <p class="why">填空里写你的 AI 名字（如 Claude / GPT / 豆包 / 通义）。同一名字不能同时出现在「写码」和「审」。</p>
+    <div id="manualSeatNote" class="alloc-warn hidden">AI 数 13–30：席位名、分组与顶岗 AI 由下方「自动岗位分配」决定，不需要手填，本表已隐藏。</div>
+    <table id="roleTable">
+      <thead><tr>
+        <th style="width:64px">席位</th><th style="width:92px">角色族</th><th>职责</th>
+        <th style="width:130px">哪个 AI</th><th style="width:92px">签字门禁</th>
+      </tr></thead>
+      <tbody id="roleBody"></tbody>
+    </table>
+    <p class="hint">主理人（你）固定签门④⑤，不占 AI 名额。</p>
+  </div>
+
+  <!-- ③+ 自动岗位分配（v4.52） -->
+  <span class="step">③+ 自动岗位分配（系统按项目规模自动分配，你可改）</span>
+  <div class="card">
+    <div class="alloc-lead">系统已按项目规模自动分配岗位，你可改：只给一套推荐，不需要你理解岗位。重负载岗位自动拆多席（如 后端-1/2/3、QA-1/2），AI 少时自动兼岗；硬约束照旧（写码≠审核、构建≠验收、大BOSS 人工、主理人唯一、独立验收不兼写码/构建）。</div>
+    <div class="alloc-row">
+      <span>项目模块数：</span><input type="number" id="moduleCount" min="1" max="60" step="1" value="4"><span>（默认按 AI 数量估，可改）</span>
+      <button type="button" onclick="refreshAllocation()">重新分配</button>
+      <button type="button" onclick="copyAlloc()">复制片段</button>
+      <button type="button" onclick="downloadAlloc()">下载 00_环境.md 片段</button>
+    </div>
+    <div id="allocPreview"></div>
+    <textarea id="allocOut" spellcheck="false" readonly></textarea>
+  </div>
+
+  <!-- ④ 目录 -->
+  <span class="step">④ 项目目录</span>
+  <div class="card">
+    <h2>项目放在哪</h2>
+    <p class="why">盘符级完整路径。不存在的话，启动器会提示你建。</p>
+    <input class="dir" id="dirInput" placeholder="例：D:\我的项目">
+    <p class="hint">目录里需要有 00_环境.md（模板在 03_模板/00_环境.md），否则每次启动都会重复问风格。</p>
+  </div>
+
+  <!-- 输出 -->
+  <span class="step">⑤ 生成 00_环境.md</span>
+  <textarea id="out" spellcheck="false" readonly></textarea>
+  <p class="hint" id="tip"></p>
+</div>
+
+<div class="bar">
+  <button class="main" onclick="generate()">生成 00_环境.md</button>
+  <button onclick="copyOut()">复制</button>
+  <button onclick="resetAll()">重置</button>
+</div>
+
+<!--
+  内置岗位目录副本（兜底）
+  来源：03_模板/岗位目录.json ；version 1.0 ；23 岗；内容与包内文件逐字一致。
+  原因：S-1 是单文件、双击 file:// 打开，fetch("../03_模板/岗位目录.json") 常被浏览器拦截。
+  策略：优先 fetch 包内文件；失败则用本副本；不允许上传时静默「找不到岗位就跳过」。
+  维护：包内岗位目录改动时，必须同步更新本副本（否则版本比对会提示不一致）。
+-->
+<script type="application/json" id="roleCatalogEmbedded">
+{
+  "version": "1.0",
+  "name": "大型项目标准岗位目录",
+  "note": "调度台与技能包共用的岗位唯一口径；AI 可填多个岗位，但必须过 rules 冲突校验。",
+  "layers": [
+    {
+      "id": "governance",
+      "name": "决策治理层",
+      "roles": [
+        {
+          "id": "boss",
+          "name": "大BOSS/拍板人",
+          "human_only": true,
+          "unique": true,
+          "can_sign": ["方案评审", "独立验收", "终验发版"],
+          "skill_role": "大BOSS",
+          "adapter_defaults": ["boss"],
+          "allow_acting": false
+        },
+        {
+          "id": "lead",
+          "name": "主理人/项目负责人",
+          "unique": true,
+          "can_plan": true,
+          "can_coordinate": true,
+          "skill_role": "主理人",
+          "adapter_defaults": ["dsh"],
+          "allow_acting": false
+        },
+        {
+          "id": "pmo",
+          "name": "PMO/项目经理",
+          "can_plan": true,
+          "can_coordinate": true,
+          "skill_role": "小组队长",
+          "allow_acting": true
+        },
+        {
+          "id": "module_lead",
+          "name": "模块负责人",
+          "can_plan": true,
+          "can_coordinate": true,
+          "skill_role": "小组队长",
+          "allow_acting": true
+        }
+      ]
+    },
+    {
+      "id": "product",
+      "name": "产品设计层",
+      "roles": [
+        {
+          "id": "product_manager",
+          "name": "产品经理",
+          "can_plan": true,
+          "skill_role": "AI-C",
+          "allow_acting": true
+        },
+        {
+          "id": "requirement",
+          "name": "需求/业务分析",
+          "can_plan": true,
+          "skill_role": "AI-C",
+          "allow_acting": true
+        },
+        {
+          "id": "ui",
+          "name": "UI设计",
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "ux",
+          "name": "UX/交互",
+          "skill_role": "AI-A",
+          "allow_acting": true
+        }
+      ]
+    },
+    {
+      "id": "engineering",
+      "name": "研发实现层",
+      "roles": [
+        {
+          "id": "architect",
+          "name": "架构师",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "frontend",
+          "name": "前端开发",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "backend",
+          "name": "后端开发",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "mobile",
+          "name": "移动端开发",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "data_algo",
+          "name": "数据/算法",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "allow_acting": true
+        },
+        {
+          "id": "integration",
+          "name": "接口/集成",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "adapter_defaults": ["a2a-agent", "webhook-bot", "pull-client"],
+          "allow_acting": true
+        },
+        {
+          "id": "dev_general",
+          "name": "代码开发（通用）",
+          "can_write": true,
+          "skill_role": "AI-A",
+          "adapter_defaults": ["codex", "dsh", "openai-compat"],
+          "allow_acting": true
+        }
+      ]
+    },
+    {
+      "id": "quality",
+      "name": "质量交付层",
+      "roles": [
+        {
+          "id": "qa",
+          "name": "测试/QA",
+          "can_test": true,
+          "skill_role": "AI-B",
+          "allow_acting": true
+        },
+        {
+          "id": "build_devops",
+          "name": "构建测试/DevOps",
+          "can_build": true,
+          "skill_role": "AI-B",
+          "adapter_defaults": ["workbuddy"],
+          "allow_acting": true
+        },
+        {
+          "id": "security",
+          "name": "安全/合规",
+          "can_audit": true,
+          "skill_role": "AI-C",
+          "allow_acting": true
+        },
+        {
+          "id": "audit",
+          "name": "评审审计",
+          "can_audit": true,
+          "skill_role": "AI-C",
+          "adapter_defaults": ["coze"],
+          "allow_acting": true
+        },
+        {
+          "id": "independent_acceptor",
+          "name": "独立验收人",
+          "human_only": true,
+          "can_accept": true,
+          "skill_role": "独立验收",
+          "allow_acting": false
+        },
+        {
+          "id": "release_ops",
+          "name": "发布/运维",
+          "can_release": true,
+          "skill_role": "AI-B",
+          "allow_acting": true
+        },
+        {
+          "id": "docs",
+          "name": "文档/知识库",
+          "can_doc": true,
+          "skill_role": "AI-C",
+          "allow_acting": true
+        },
+        {
+          "id": "test_double",
+          "name": "演示/测试替身",
+          "skill_role": "AI-B",
+          "adapter_defaults": ["demo"],
+          "allow_acting": true
+        }
+      ]
+    }
+  ],
+  "presets": {
+    "small_3ai": {
+      "name": "标准 3AI（小项目）",
+      "roles": {
+        "boss": 1,
+        "lead": 1,
+        "dev_general": 1,
+        "build_devops": 1,
+        "independent_acceptor": 1,
+        "qa": 1,
+        "docs": 1
+      }
+    },
+    "medium_6ai": {
+      "name": "中型项目（6AI + 2人）",
+      "roles": {
+        "boss": 1,
+        "lead": 1,
+        "product_manager": 1,
+        "dev_general": 2,
+        "build_devops": 1,
+        "audit": 1,
+        "qa": 1,
+        "independent_acceptor": 1,
+        "docs": 1
+      }
+    },
+    "large_10ai": {
+      "name": "大型项目（10AI + 2人）",
+      "roles": {
+        "boss": 1,
+        "lead": 1,
+        "pmo": 1,
+        "product_manager": 1,
+        "requirement": 1,
+        "ui": 1,
+        "architect": 1,
+        "frontend": 1,
+        "backend": 1,
+        "mobile": 1,
+        "qa": 1,
+        "build_devops": 1,
+        "security": 1,
+        "audit": 1,
+        "independent_acceptor": 1,
+        "release_ops": 1,
+        "docs": 1
+      }
+    }
+  },
+  "rules": [
+    {
+      "id": "write_audit_separation",
+      "desc": "同一 AI/人不能既写码又做代码审核",
+      "conflict": ["can_write", "can_audit"]
+    },
+    {
+      "id": "build_accept_separation",
+      "desc": "同一 AI/人不能既构建又做独立验收",
+      "conflict": ["can_build", "can_accept"]
+    },
+    {
+      "id": "boss_human_only",
+      "desc": "大BOSS/拍板人必须是人工",
+      "role": "boss",
+      "human_only": true
+    },
+    {
+      "id": "lead_unique",
+      "desc": "主理人/项目负责人只能 1 个",
+      "role": "lead",
+      "unique": true
+    },
+    {
+      "id": "acceptor_not_builder",
+      "desc": "独立验收人不得是构建者/写码者/主理人兼任",
+      "role": "independent_acceptor",
+      "allow_acting": false
+    }
+  ]
+}
+</script>
+
+<script>
+/* ===== 席位模板：按 AI 数量生成 ===== */
+var PLANS = {
+  '3': [
+    { id:'A1', grp:'AI-A', duty:'写码（出方案 + 实现）', gate:'无' },
+    { id:'B1', grp:'AI-B', duty:'构建 + 测试执行', gate:'门③' },
+    { id:'C1', grp:'AI-C', duty:'审方案/代码 + 记台账', gate:'门①②' }
+  ],
+  '4': [
+    { id:'A1', grp:'AI-A', duty:'出方案', gate:'无' },
+    { id:'A2', grp:'AI-A', duty:'写码（方案落地）', gate:'无' },
+    { id:'B1', grp:'AI-B', duty:'构建 + 测试执行', gate:'门③' },
+    { id:'C1', grp:'AI-C', duty:'审方案/代码 + 台账', gate:'门①②' }
+  ],
+  '5': [
+    { id:'A1', grp:'AI-A', duty:'写码（切片 1）', gate:'无' },
+    { id:'A2', grp:'AI-A', duty:'写码（切片 2）', gate:'无' },
+    { id:'I1', grp:'AI-A', duty:'集成 owner（不写功能）', gate:'无' },
+    { id:'B1', grp:'AI-B', duty:'构建 + 测试执行', gate:'门③' },
+    { id:'C1', grp:'AI-C', duty:'审方案/代码 + 台账', gate:'门①②' }
+  ],
+  '6': [
+    { id:'A1', grp:'AI-A', duty:'写码（切片 1）', gate:'无' },
+    { id:'A2', grp:'AI-A', duty:'写码（切片 2）', gate:'无' },
+    { id:'I1', grp:'AI-A', duty:'集成 owner（不写功能）', gate:'无' },
+    { id:'B1', grp:'AI-B', duty:'构建 + 测试执行', gate:'门③' },
+    { id:'B2', grp:'AI-B', duty:'独立验收（对账/真机）', gate:'门④' },
+    { id:'C1', grp:'AI-C', duty:'审方案/代码 + 台账', gate:'门①②' }
+  ]
+};
+/* 7–12 档：以 6 档为基础，按同一 A/I/B/C 命名规则逐档补席位；
+   3–6 档定义保持原样、不改写，行为与生成格式不变。 */
+(function extendPlans(){
+  var extra = {
+    '7':  { id:'A3', grp:'AI-A', duty:'写码（切片 3）',        gate:'无'   },
+    '8':  { id:'C2', grp:'AI-C', duty:'审方案/代码 + 台账（副）', gate:'门①②' },
+    '9':  { id:'A4', grp:'AI-A', duty:'写码（切片 4）',        gate:'无'   },
+    '10': { id:'B3', grp:'AI-B', duty:'构建 + 测试执行（副）',   gate:'门③' },
+    '11': { id:'C3', grp:'AI-C', duty:'审计/台账（副）',        gate:'门①②' },
+    '12': { id:'A5', grp:'AI-A', duty:'写码（切片 5）',        gate:'无'   }
+  };
+  var prev = '6';
+  for (var n = 7; n <= 12; n++) {
+    var key = String(n), base = PLANS[prev].slice(), add = extra[key], pos = -1;
+    for (var i = 0; i < base.length; i++) if (base[i].grp === add.grp) pos = i;
+    base.splice(pos + 1, 0, add);   // 插到同组最后一个席位之后
+    PLANS[key] = base;
+    prev = key;
+  }
+})();
+var GRP_CLS = { 'AI-A':'g-a', 'AI-B':'g-b', 'AI-C':'g-c' };
+
+var names = {};   // 席位ID -> AI 名字
+
+/* ===== ai-roster/v1 上传：本机解析 + 校验 + 按 skill_role 预填 ===== */
+var catalogCache = null, catalogSource = '内置副本（03_模板/岗位目录.json v1.0）';
+var rosterState = { raw:null, ais:[], errors:[], warnings:[], mismatch:false,
+                    confirmed:false, fileName:'', roles:{} };
+var seatMeta = {};   // 席位ID -> {id, role_id, post, skill_role}，生成时保留 id
+
+function getCatalog() {
+  if (!catalogCache) catalogCache = JSON.parse(document.getElementById('roleCatalogEmbedded').textContent);
+  return catalogCache;
+}
+function flatRoles(cat) {
+  var out = {};
+  (cat.layers || []).forEach(function (L) {
+    (L.roles || []).forEach(function (r) { out[r.id] = r; });
+  });
+  return out;
+}
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+function validateRoster(obj) {
+  var errs = [], warns = [];
+  if (!obj || obj.schema !== 'ai-roster/v1') {
+    return { errs:['schema 必须是 ai-roster/v1（当前：' + (obj && obj.schema) + '）'],
+             warns:warns, ais:[], roles:{}, mismatch:false };
+  }
+  var cat = getCatalog(), roles = flatRoles(cat), ver = String(cat.version || '');
+  var mismatch = String(obj.role_catalog_version || '') !== ver;
+  if (mismatch) warns.push('岗位目录版本不一致：名单 ' + (obj.role_catalog_version || '空') +
+                           ' / 包内 ' + ver + '；需确认后才能生成');
+  var ais = obj.ais;
+  if (!Array.isArray(ais) || !ais.length) {
+    return { errs:['ais 不能为空'], warns:warns, ais:[], roles:roles, mismatch:mismatch };
+  }
+  if (ais.length > 30) errs.push('当前 S-1 最多 30 个 AI（名单有 ' + ais.length + ' 个），不生成');
+  var byId = {};
+  ais.forEach(function (a, i) {
+    var tag = '第 ' + (i + 1) + ' 个 AI';
+    ['id','label','type','role_id','post'].forEach(function (k) {
+      if (!a[k] || !String(a[k]).trim()) errs.push(tag + ' 缺必填字段 ' + k);
+    });
+    var r = roles[a.role_id];
+    if (!r) {
+      errs.push(tag + '（' + (a.label || a.id || '?') + '）的 role_id「' + a.role_id +
+                '」不在岗位目录：标红，不静默跳过');
+      return;
+    }
+    var human = String(a.type || '').toLowerCase() === 'human';
+    if (human && !r.human_only) errs.push(tag + '（' + a.label + '）是 human，只能落人工岗；当前 ' + a.role_id + ' 不是');
+    if (!human && r.human_only) errs.push(tag + '（' + a.label + '）是 AI，不能占人工岗「' + r.name + '」（' + a.role_id + '）');
+    var it = byId[a.id] || (byId[a.id] = { roles:[], human:false, label:a.label || a.id });
+    it.roles.push(r);
+    if (human) it.human = true;
+  });
+  Object.keys(byId).forEach(function (id) {
+    var it = byId[id], f = {};
+    it.roles.forEach(function (r) {
+      Object.keys(r).forEach(function (k) { if (k.indexOf('can_') === 0 && r[k]) f[k] = true; });
+    });
+    if (f.can_write && f.can_audit) errs.push('身份冲突：' + id + '（' + it.label + '）既写码又审核 → 门①② 自审自写');
+    if (f.can_build && f.can_accept) errs.push('身份冲突：' + id + '（' + it.label + '）既构建又独立验收 → 门④ 自建自签');
+    if (it.roles.filter(function (r) { return r.id === 'lead'; }).length > 1)
+      errs.push('多个主理人：' + id + ' 被重复指派 lead');
+    if (!it.human && it.roles.some(function (r) { return r.id === 'boss' || r.id === 'independent_acceptor'; }))
+      errs.push('AI 占大BOSS/独立验收：' + id + '（' + it.label + '）');
+  });
+  return { errs:errs, warns:warns, ais:errs.length ? [] : ais, roles:roles, mismatch:mismatch };
+}
+function rosterSeatPlan() {
+  var plan = getPlan();
+  var q = { 'AI-A':[], 'AI-B':[], 'AI-C':[], human:[] }, mapping = [], seatOf = {}, unfilled = [];
+  rosterState.ais.forEach(function (a) {
+    var r = rosterState.roles[a.role_id] || {}, g = r.skill_role;
+    if (g === 'AI-A' || g === 'AI-B' || g === 'AI-C') q[g].push({ a:a, role:r });
+    else q.human.push({ a:a, role:r });
+  });
+  ['AI-A','AI-B','AI-C'].forEach(function (g) {
+    var seats = plan.filter(function (p) { return p.grp === g; });
+    q[g].forEach(function (item, i) {
+      var seat = i < seats.length ? seats[i].id : '';
+      if (seat) seatOf[item.a.id + '#' + i] = seat;
+      else unfilled.push(item.a.label + '（' + item.a.id + '）');
+      mapping.push({ a:item.a, role:item.role, grp:g, seat:seat || '待指定' });
+    });
+  });
+  return { plan:plan, q:q, mapping:mapping, seatOf:seatOf, unfilled:unfilled };
+}
+function applyRosterToSeats() {
+  var r = rosterSeatPlan();
+  names = {}; seatMeta = {};
+  r.mapping.forEach(function (m) {
+    if (m.seat === '待指定') return;
+    names[m.seat] = m.a.label;                     // 名称优先 label
+    seatMeta[m.seat] = { id:m.a.id, role_id:m.a.role_id, post:m.a.post, skill_role:m.grp };
+  });
+  renderRoles();
+}
+function parseRosterText(text, fileName) {
+  var obj;
+  try { obj = JSON.parse(text); }
+  catch (e) {
+    rosterState = { raw:null, ais:[], errors:['JSON 解析失败：' + e.message], warnings:[],
+                    mismatch:false, confirmed:false, fileName:fileName || '', roles:{} };
+    renderRoster(); return false;
+  }
+  var v = validateRoster(obj);
+  rosterState = { raw:obj, ais:v.ais, errors:v.errs, warnings:v.warns, mismatch:v.mismatch,
+                  confirmed:false, fileName:fileName || '', roles:v.roles };
+  if (!v.errs.length) { refreshAllocation(); applyRosterToSeats(); }  // 只预填，不生成
+  renderRoster();
+  return v.errs.length === 0;
+}
+function switchToSuggested() {
+  var n = Math.max(3, Math.min(30, rosterState.ais.length));
+  var el = document.querySelector('input[name="cnt"][value="' + n + '"]');
+  if (el) el.checked = true;                      // 3/4/5 档直接切
+  else {                                          // 6–30 档用自定义输入，仍是「需你确认，不会自动切」
+    document.getElementById('cntCustomRadio').checked = true;
+    document.getElementById('cntCustom').value = String(n);
+  }
+  updateCountHint();
+  refreshAllocation();                            // 用户点按钮 = 确认切档
+  applyRosterToSeats();
+  renderRoster();
+  renderRoles();
+}
+function confirmVersion() { rosterState.confirmed = true; renderRoster(); }
+function renderRoster() {
+  var box = document.getElementById('rosterPreview');
+  if (!box) return;
+  if (!rosterState.raw && !rosterState.errors.length) {
+    box.innerHTML = '<span class="hint">未上传名单。不上传时，下面 ①–⑤ 四问与原来完全一致。</span>';
+    return;
+  }
+  var h = [];
+  h.push('<div class="roster-meta">文件：' + escHtml(rosterState.fileName || '（直接解析）') +
+         '　schema：' + escHtml((rosterState.raw && rosterState.raw.schema) || '—') +
+         '　名单版本：' + escHtml((rosterState.raw && rosterState.raw.role_catalog_version) || '—') +
+         '　AI 数：' + ((rosterState.raw && Array.isArray(rosterState.raw.ais)) ? rosterState.raw.ais.length : 0) +
+         '　岗位目录：' + escHtml(catalogSource) + '</div>');
+  if (rosterState.errors.length) {
+    h.push('<div class="bad">校验未通过，不预填、不生成：</div><ul>');
+    rosterState.errors.forEach(function (e) { h.push('<li class="bad">' + escHtml(e) + '</li>'); });
+    h.push('</ul>');
+    box.innerHTML = h.join('');
+    return;
+  }
+  rosterState.warnings.forEach(function (w) { h.push('<div class="warn">⚠ ' + escHtml(w) + '</div>'); });
+  var r = rosterSeatPlan(), need = Math.max(3, Math.min(30, rosterState.ais.length));
+  if (need > Number(currentCount())) {
+    h.push('<div class="warn">名单 ' + rosterState.ais.length + ' 个 AI，当前是 ' + currentCount() +
+           ' 档：会截断。建议切到 ' + need + ' 档（需你确认，不会自动切）。</div>');
+    h.push('<div class="roster-actions"><button onclick="switchToSuggested()">切到 ' + need + ' 档并重新预填</button></div>');
+  }
+  if (rosterState.mismatch && !rosterState.confirmed)
+    h.push('<div class="roster-actions"><button onclick="confirmVersion()">确认版本不一致并继续</button></div>');
+  else if (rosterState.mismatch && rosterState.confirmed)
+    h.push('<div class="warn">已确认版本不一致（仍会生成）。</div>');
+  h.push('<div class="ok">校验通过：已按 role_id → skill_role 预填 ' + Object.keys(r.seatOf).length +
+         ' 个席位；空席位显示「待指定」，S-1 不自动补全。</div>');
+  if (r.unfilled.length) h.push('<div class="warn">无对应席位（按顺序溢出）：' + escHtml(r.unfilled.join('、')) + '</div>');
+  h.push('<table><thead><tr><th>名称 / id</th><th>岗位</th><th>role_id</th><th>skill_role</th><th>目标席位</th></tr></thead><tbody>');
+  r.mapping.forEach(function (m) {
+    h.push('<tr><td>' + escHtml(m.a.label) + ' <span class="roster-meta">(' + escHtml(m.a.id) + ')</span></td>' +
+           '<td>' + escHtml(m.a.post) + '</td><td>' + escHtml(m.a.role_id) + '</td>' +
+           '<td>' + escHtml(m.role.skill_role || '—') + '</td><td>' + escHtml(m.seat) + '</td></tr>');
+  });
+  r.q.human.forEach(function (x) {
+    h.push('<tr><td>' + escHtml(x.a.label) + ' <span class="roster-meta">(' + escHtml(x.a.id) + ')</span></td>' +
+           '<td>' + escHtml(x.a.post) + '</td><td>' + escHtml(x.a.role_id) + '</td>' +
+           '<td>' + escHtml(x.role.skill_role || '—') + '</td><td>人工席位（只显示，不占 AI 名额）</td></tr>');
+  });
+  h.push('</tbody></table>');
+  box.innerHTML = h.join('');
+}
+
+/* v4.52 R3：3/4/5 + 自定义整数 3–30；非法只做行内提示，不阻断其它问 */
+function customCountState() {
+  var el = document.getElementById('cntCustom');
+  var raw = el ? String(el.value || '').trim() : '';
+  if (!raw) return { ok:false, n:0, msg:'' };
+  if (!/^\d+$/.test(raw)) return { ok:false, n:0, msg:'只能填整数（3–30），空值/小数/字母都不算' };
+  var n = Number(raw);
+  if (n < 3) return { ok:false, n:0, msg:'少于 3 个只能进非标准辅助模式' };
+  if (n > 30) return { ok:true, n:30, msg:'上限 30，已按 30 个生成' };
+  return { ok:true, n:n, msg:'' };
+}
+function currentCount() {
+  var r = document.querySelector('input[name="cnt"]:checked');
+  if (r && r.value === 'custom') {
+    var c = customCountState();
+    return c.ok ? String(c.n) : '3';   // 非法时回落到 3 档，不阻断其它问
+  }
+  return r ? r.value : '3';
+}
+function updateCountHint() {
+  var el = document.getElementById('cntHint'), radio = document.getElementById('cntCustomRadio');
+  if (!el || !radio) return;
+  if (!radio.checked) { el.textContent = ''; el.className = 'hint'; return; }
+  var c = customCountState();
+  if (!c.ok) { el.textContent = c.msg || '请输入整数 3–30'; el.className = 'hint bad'; }
+  else if (c.msg) { el.textContent = c.msg; el.className = 'hint bad'; }
+  else { el.textContent = '已按 ' + c.n + ' 个 AI 自动分配岗位'; el.className = 'hint ok'; }
+}
+function defaultModules(n) {
+  n = Number(n) || 3;
+  return n <= 3 ? 4 : n <= 5 ? 6 : n <= 9 ? 9 : 12;
+}
+function getPlan() {
+  var c = Number(currentCount());
+  return PLANS[String(c)] || autoPlan(c);   // 3–12 沿用原 A/I/B/C；13–30 由自动分配给出
+}
+
+function renderRoles() {
+  var plan = getPlan();
+  var auto = Number(currentCount()) > 12;
+  var note = document.getElementById('manualSeatNote'), table = document.getElementById('roleTable');
+  if (note) note.classList.toggle('hidden', !auto);
+  if (table) table.classList.toggle('hidden', auto);
+  var tb = document.getElementById('roleBody');
+  tb.innerHTML = '';
+  plan.forEach(function (p) {
+    if (p.name) names[p.id] = p.name;   // 13–30 由自动分配给出，不在页面手填
+    var tr = document.createElement('tr');
+    var cls = p.gate === '门④' ? 'g-v' : (GRP_CLS[p.grp] || '');
+    tr.innerHTML =
+      '<td class="rolegrp ' + cls + '">' + p.id + '</td>' +
+      '<td class="' + cls + '">' + p.grp + '</td>' +
+      '<td class="fixed">' + p.duty + '</td>' +
+      '<td><input class="nm" data-seat="' + p.id + '" placeholder="AI 名字"></td>' +
+      '<td class="fixed">' + p.gate + '</td>';
+    tb.appendChild(tr);
+  });
+  // 回填已填过的名字
+  tb.querySelectorAll('input.nm').forEach(function (inp) {
+    var seat = inp.getAttribute('data-seat');
+    if (names[seat]) inp.value = names[seat];
+    inp.addEventListener('input', function () { names[seat] = inp.value.trim(); });
+  });
+}
+
+/* ===== 冲突检测（对应流程 S-1.2.1 身份冲突熔断） ===== */
+function conflicts() {
+  var plan = getPlan();
+  var errs = [];
+  var byName = {};
+  plan.forEach(function (p) {
+    var nm = (names[p.id] || '').trim();
+    if (!nm) return;
+    if (!byName[nm]) byName[nm] = [];
+    byName[nm].push(p);
+  });
+  Object.keys(byName).forEach(function (nm) {
+    var seats = byName[nm];
+    var grps = seats.map(function (s) { return s.grp; });
+    var duties = seats.map(function (s) { return s.duty; });
+    // 写码 与 审 同人
+    var hasA = grps.indexOf('AI-A') >= 0;
+    var hasC = grps.indexOf('AI-C') >= 0;
+    if (hasA && hasC) {
+      errs.push('身份冲突：' + nm + ' 同时占「写码」和「审」→ 门①② 失效（自审自写）');
+    }
+    // 构建 与 独立验收 同人
+    var hasBuild = duties.some(function (d) { return d.indexOf('构建') >= 0; });
+    var hasVerify = duties.some(function (d) { return d.indexOf('独立验收') >= 0; });
+    if (hasBuild && hasVerify) {
+      errs.push('身份冲突：' + nm + ' 同时占「构建」和「独立验收」→ 门④ 失效（自建自签）');
+    }
+  });
+  return errs;
+}
+
+function generate() {
+  var errs = conflicts();
+  // 上传名单时追加校验：错误 / 超 30 / 版本未确认 / 档位不足，一律不生成、不截断
+  if (rosterState.errors.length) errs = errs.concat(rosterState.errors);
+  if (rosterState.raw && !rosterState.errors.length && rosterState.ais.length) {
+    var n = rosterState.ais.length;
+    if (n > 30) errs.push('当前 S-1 最多 30 个 AI（名单 ' + n + ' 个）');
+    if (n > Number(currentCount()))
+      errs.push('名单有 ' + n + ' 个 AI，当前是 ' + currentCount() + ' 档；会截断，请先点「切到 ' + Math.min(30, n) + ' 档并重新预填」确认');
+    if (rosterState.mismatch && !rosterState.confirmed)
+      errs.push('岗位目录版本不一致，需先点「确认版本不一致并继续」');
+  }
+  var dir = document.getElementById('dirInput').value.trim();
+  var plan = getPlan();
+
+  // 必填：至少填了一个 AI 名字
+  var filled = plan.filter(function (p) { return (names[p.id] || '').trim(); }).length;
+  if (filled === 0) errs.push('还没填任何 AI 名字：至少填一个，否则不知道谁顶哪个位');
+  // 未上传名单时保持原有「有席位还空着」提示；上传名单时空席位按 §3.6 显示「待指定」，不自动补全、也不阻断生成
+  if (!rosterState.raw && Object.keys(names).some(function (k) { return !(names[k] || '').trim() && plan.some(function(p){return p.id===k;}); }) && filled > 0 && filled < plan.length) {
+    errs.push('有席位还空着（填了 ' + filled + ' / ' + plan.length + '）：可以留空，但要在下面写"谁兼谁"');
+  }
+
+  var errBox = document.getElementById('err'), list = document.getElementById('errlist');
+  if (errs.length) {
+    list.innerHTML = '';
+    errs.forEach(function (e) { var li = document.createElement('li'); li.textContent = e; list.appendChild(li); });
+    errBox.style.display = 'block';
+    document.getElementById('ok').style.display = 'none';
+    document.getElementById('out').style.display = 'none';
+    return;
+  }
+  errBox.style.display = 'none';
+
+  var model = document.querySelector('input[name="model"]:checked').value;
+  var lines = [];
+  lines.push('# 00_环境.md');
+  lines.push('');
+  // 注意：这里必须是空的「风格：」，不能写占位符。
+  // 启动器和调试台只看「风格：」后面有没有内容——写"____"会被当成已选风格，
+  // 导致选型页永远不弹、顶栏显示占位符文本。
+  lines.push('风格：');
+  lines.push('<!-- 上面这行留空。选完风格后由 03_模板/UI风格选型.html 填入「风格：X 名称」 -->');
+  lines.push('风格锁定：否（S3 调整中）');
+  lines.push('');
+  lines.push('项目名：____');
+  lines.push('目录：' + (dir || '____'));
+  lines.push('模型：' + model + (model === '普通' ? '（降级：S0–S1 产出标"模型：普通"，对标附链接人工复核）' : ''));
+  lines.push('AI 数量：' + plan.length + '（主理人固定 1 个）');
+  lines.push('');
+  /* v4.60 R3：角色席位不再逐 AI 列表，只给 4 族席数摘要；明细见下方唯一一张席位表 */
+  var fam = { write:0, audit:0, build:0, neutral:0 };
+  (allocation.seats || []).forEach(function (s) {
+    if (!s.enabled || s.human) return;
+    if (fam[s.cls] !== undefined) fam[s.cls]++;
+  });
+  lines.push('角色席位：写码 ' + fam.write + ' 席 / 审核 ' + fam.audit + ' 席 / 构建 ' + fam.build + ' 席 / 中立 ' + fam.neutral + ' 席');
+  lines.push('');
+  /* v4.60 R2：门④ 验收人取分配结果中的人工独立验收席，不再写死主理人 */
+  var acceptor = (allocation.seats || []).filter(function (s) {
+    return s.enabled && s.roleId === 'independent_acceptor' && s.ai;
+  })[0];
+  lines.push(acceptor
+    ? '门④ 验收人：' + acceptor.ai + '（不得兼写码/构建/主理人）'
+    : '门④ 验收人：人工（由主理人指定，不得兼写码/构建/主理人）');
+  lines.push('兼角 / 拆角：无');
+  lines.push('状态：标准流程');
+  lines.push('');
+  lines.push('调度台项目：____（项目名 / 项目 ID；没有调度台时填：无（S4.5-Lite））');
+  lines.push('调度台目录：' + (dir || '____') + '（S4 目录，必须是真实存在、可写目录）');
+  lines.push('大BOSS/拍板人：____（人工，默认主理人本人；不执行 AI 工单）');
+  lines.push('');
+  lines.push('自动流转边界：');
+  lines.push('- 每单最大派发次数：3（默认，正整数）');
+  lines.push('- 单张单总时限：60 分钟（默认，正整数）');
+  lines.push('- 模型额度/预算上限：____（写明模型额度或费用口径）');
+  lines.push('- 无进展判定：____（同一错误 / 同一 diff / 同一回件 hash，至少选一种）');
+  lines.push('- 熔断阈值：____（连续失败工单数 / 失败率）');
+  lines.push('- 门禁停点：____（门① 门② 门③ 门④ 门⑤ 中必须人工拍板的门）');
+  lines.push('- 暂停/继续/停止/急停权限：大BOSS（主理人仅可按授权执行协调动作）');
+  lines.push('- 突发升级通知：@大BOSS（死循环/熔断/超时/额度不足）');
+
+  // 上传名单时追加：只用 label/id/role_id/post；不写 Key/Token/CLI 路径，不用 default_model 覆盖模型
+  if (rosterState.raw && !rosterState.errors.length && rosterState.ais.length) {
+    lines.push('');
+    lines.push('AI 岗位配置：');
+    rosterState.ais.forEach(function (a) {
+      lines.push('- ' + a.label + ' (' + a.id + ') → ' + a.post + '（' + a.role_id + '）');
+    });
+  }
+
+  /* v4.60：把自动岗位分配结果写进 00_环境.md（只追加，既有字段不动） */
+  lines = lines.concat(allocFragment(false));
+
+  document.getElementById('out').value = lines.join('\n');
+  document.getElementById('out').style.display = 'block';
+  document.getElementById('ok').style.display = 'block';
+  document.getElementById('tip').textContent = '生成完成。粘进项目目录的 00_环境.md（模板在 03_模板/00_环境.md）。';
+  document.getElementById('out').scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+function copyOut() {
+  var out = document.getElementById('out');
+  if (out.style.display === 'none') { generate(); }
+  if (out.style.display === 'none') return;
+  out.select();
+  try { document.execCommand('copy'); document.getElementById('tip').textContent = '已复制。'; }
+  catch (e) { document.getElementById('tip').textContent = '复制失败，请手动 Ctrl+C。'; }
+}
+
+function resetAll() {
+  if (!confirm('重置所有选择？')) return;
+  names = {};
+  seatMeta = {};
+  rosterState = { raw:null, ais:[], errors:[], warnings:[], mismatch:false,
+                  confirmed:false, fileName:'', roles:{} };
+  var rf = document.getElementById('rosterFile'); if (rf) rf.value = '';
+  renderRoster();
+  document.querySelector('input[name="model"][value="PRO"]').checked = true;
+  document.querySelector('input[name="cnt"][value="3"]').checked = true;
+  var cc = document.getElementById('cntCustom'); if (cc) cc.value = '';
+  var mc = document.getElementById('moduleCount'); if (mc) delete mc.dataset.touched;
+  document.getElementById('dirInput').value = '';
+  document.getElementById('out').style.display = 'none';
+  document.getElementById('ok').style.display = 'none';
+  document.getElementById('err').style.display = 'none';
+  var mw = document.getElementById('modelWarn'); if (mw) mw.style.display = 'none';
+  onCountChanged();
+  document.getElementById('tip').textContent = '';
+}
+
+document.querySelectorAll('input[name="model"]').forEach(function (r) {
+  r.addEventListener('change', function () {
+    var w = document.getElementById('modelWarn');
+    if (!w) return;
+    w.style.display = (document.querySelector('input[name="model"]:checked').value === '普通') ? 'block' : 'none';
+  });
+});
+
+document.querySelectorAll('input[name="cnt"]').forEach(function (r) {
+  r.addEventListener('change', onCountChanged);
+});
+document.getElementById('cntCustom').addEventListener('input', function () {
+  if (this.value.trim() !== '') document.getElementById('cntCustomRadio').checked = true;
+  onCountChanged();                     // 非法只显示行内提示，不阻断其它问
+});
+document.getElementById('moduleCount').addEventListener('input', function () {
+  this.dataset.touched = '1';           // 用户改过之后不再自动按数量档覆盖
+  onCountChanged();
+});
+
+/* 选完文件立即预览解析结果，不直接生成；只读本机 FileReader，不联网 */
+document.getElementById('rosterFile').addEventListener('change', function (e) {
+  var f = e.target.files && e.target.files[0];
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function (ev) { parseRosterText(String(ev.target.result), f.name); };
+  reader.onerror = function () {
+    rosterState = { raw:null, ais:[], errors:['文件读取失败'], warnings:[], mismatch:false,
+                    confirmed:false, fileName:f.name, roles:{} };
+    renderRoster();
+  };
+  reader.readAsText(f, 'utf-8');
+});
+
+/* 独立 HTML：http(s) 下优先 fetch 包内岗位目录；file:// 下浏览器禁止 fetch，
+   直接用内置同一份副本（零依赖、不联网，控制台不产生噪声） */
+if (location.protocol !== 'file:') {
+  try {
+    fetch('../03_模板/岗位目录.json').then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      if (j && j.layers) { catalogCache = j; catalogSource = '03_模板/岗位目录.json（fetch）'; }
+      if (rosterState.raw) renderRoster();
+    }).catch(function () {
+      catalogSource = '内置副本（fetch 失败）';
+      if (rosterState.raw) renderRoster();
+    });
+  } catch (e) {
+    catalogSource = '内置副本（fetch 不可用）';
+  }
+}
+
+/* ========================================================================
+   v4.52 R4：自动岗位分配（纯前端，复用内置 03_模板/岗位目录.json 副本）
+   - 一套推荐：按数量档选 preset → 重负载岗位拆多席 → 按 rules 分池指派 → 可改/可启停
+   - 只记姓名与席位，不联网、不读外部文件；13–30 的席位名/分组全由这里给出
+   ======================================================================== */
+var ALLOC_SHORT = {
+  boss:'大BOSS', lead:'主理人', pmo:'PMO', module_lead:'模块长',
+  product_manager:'产品', requirement:'需求', ui:'UI', ux:'UX',
+  architect:'架构', frontend:'前端', backend:'后端', mobile:'移动端',
+  data_algo:'数据算法', integration:'集成', dev_general:'开发',
+  qa:'QA', build_devops:'构建', security:'安全', audit:'审计',
+  independent_acceptor:'独立验收', release_ops:'发布运维', docs:'文档',
+  test_double:'测试替身', reserve:'机动'
+};
+var HEAVY = ['backend','frontend','dev_general','qa','build_devops','architect','mobile','integration','docs','audit'];
+var HUMAN_NAMES = {
+  boss:'人工：大BOSS（拍板人）', lead:'人工：主理人（唯一）',
+  independent_acceptor:'人工：独立验收人'
+};
+var CLASS_ORDER = ['write','audit','neutral','build'];
+var allocation = { count:3, modules:4, preset:'', mode:'', seats:[], aiNames:[], presetRoles:[], reserveN:0 };
+
+function roleFlags(r) {
+  var f = {};
+  Object.keys(r || {}).forEach(function (k) { if (k.indexOf('can_') === 0 && r[k]) f[k] = true; });
+  return f;
+}
+function classOf(f) {
+  return f.can_write ? 'write' : f.can_audit ? 'audit' : (f.can_build || f.can_accept) ? 'build' : 'neutral';
+}
+function grpOf(f) {
+  return f.can_write ? 'AI-A' : (f.can_build || f.can_test || f.can_release) ? 'AI-B' : 'AI-C';
+}
+function gateOf(f) { return f.can_audit ? '门①②' : f.can_build ? '门③' : '无'; }
+function moduleRange(idx, total, modules) {
+  if (total <= 1) return '全部 ' + modules + ' 个模块';
+  var per = Math.ceil(modules / total), start = (idx - 1) * per + 1, end = Math.min(modules, idx * per);
+  return start > modules ? '机动支援' : '第 ' + start + '–' + end + ' 个模块（共 ' + modules + ' 个）';
+}
+function boundaryOf(r, idx, total, modules) {
+  var range = moduleRange(idx, total, modules);
+  if (r.id === 'reserve') return '按任务临时派，只做机动支援，不占固定岗位，不承担写码/审核/构建/验收核心职责';
+  if (r.can_write) return total > 1 ? '负责' + range + '的写码实现，不审门②' : '负责全部模块的写码实现，不审门②';
+  if (r.can_audit) return '审方案与代码并记台账，不写业务代码';
+  if (r.can_build) return '构建与流水线维护，不签门④';
+  if (r.can_test) return '测试执行与回归，只出测试结论';
+  if (r.can_accept) return '人工独立验收，不写码、不构建、不兼主理人';
+  if (r.can_plan || r.can_coordinate) return '计划与协调，不写业务代码';
+  if (r.can_doc) return '文档与知识库，不写业务代码';
+  if (r.can_release) return '发布与运维，不写业务代码';
+  return '按岗位说明书执行，不兼任冲突岗位';
+}
+function aiPool(n) {
+  var pool = [];
+  if (rosterState.raw && !rosterState.errors.length && Array.isArray(rosterState.ais)) {
+    rosterState.ais.forEach(function (a) { if (pool.length < n && a && a.label) pool.push(String(a.label)); });
+  }
+  for (var i = pool.length + 1; i <= n; i++) pool.push('AI-' + (i < 10 ? '0' : '') + i);
+  return pool;
+}
+function buildAllocation(n, modules) {
+  var cat = getCatalog(), roles = flatRoles(cat);
+  var allRoles = flatRoles(cat);                       // v4.60：岗位目录全部 23 岗（不含 reserve）
+  var allIds = Object.keys(allRoles);
+  roles.reserve = { id:'reserve', name:'机动/突击队', skill_role:'AI-C' };
+  var presetKey = n <= 5 ? 'small_3ai' : n <= 9 ? 'medium_6ai' : 'large_10ai';
+  var mode = n <= 3 ? '非标准辅助模式（≤3 AI，不能签正式门禁）' : '标准流程';
+  var preset = (cat.presets && cat.presets[presetKey]) || { name:presetKey, roles:{} };
+  var humanIds = Object.keys(roles).filter(function (id) {
+    var r = roles[id]; return r && (r.human_only || r.allow_acting === false) && id !== 'reserve';
+  });
+  /* v4.60 R1：N ≥ 23（岗位总数）时先给 23 岗各 1 席打底，剩余席位按重负载序拆多席；
+     N < 23 时保留原 preset 行为，未启用岗位在提示里明说。 */
+  var fullCoverage = n >= allIds.length;
+  var aiRoleIds = fullCoverage
+    ? allIds.filter(function (id) { return humanIds.indexOf(id) < 0; })
+    : Object.keys(preset.roles).filter(function (id) { return roles[id] && humanIds.indexOf(id) < 0; });
+  if (aiRoleIds.indexOf('audit') < 0 && roles.audit) aiRoleIds.push('audit');  // 写码≠审核：必须有审核席
+  var heavyMin = n >= 10 ? Math.max(1, Math.min(3, Math.ceil(modules / 4))) : 1;
+  var cap = Math.max(2, Math.min(8, Math.ceil(modules / 2) + 1));
+  var counts = {}, heavy = [];
+  aiRoleIds.forEach(function (id) {
+    var base = Math.max(1, Number(preset.roles[id]) || 1);
+    counts[id] = fullCoverage ? 1 : (HEAVY.indexOf(id) >= 0 ? Math.max(base, heavyMin) : base);
+    if (HEAVY.indexOf(id) >= 0) heavy.push(id);
+  });
+  if (!heavy.length) heavy = aiRoleIds.slice();
+  function total() { var s = 0; Object.keys(counts).forEach(function (k) { s += counts[k]; }); return s; }
+  var target = Math.max(n, total()), guard = 0;
+  if (fullCoverage) {
+    /* 先按重负载序逐个补到 heavyMin（后端/前端/QA/构建等确实拆多席），再按 cap 继续加 */
+    var order = heavy.slice().sort(function (a, b) { return HEAVY.indexOf(a) - HEAVY.indexOf(b); });
+    for (var t = 0; t < order.length && total() < target; t++) {
+      var hid = order[t];
+      while (counts[hid] < heavyMin && total() < target) counts[hid]++;
+    }
+    while (total() < target && guard++ < 500) {
+      var grew = false;
+      order.forEach(function (id) {
+        if (total() >= target) return;
+        if (counts[id] < cap) { counts[id]++; grew = true; }
+      });
+      if (!grew) break;
+    }
+  } else {
+    while (total() < target && guard++ < 500) {
+      var grew0 = false;
+      heavy.forEach(function (id) {
+        if (total() >= target) return;
+        if (counts[id] < cap) { counts[id]++; grew0 = true; }
+      });
+      if (!grew0) break;
+    }
+  }
+  var reserveN = Math.max(0, target - total());   // 降级：岗位不够拆时归入机动/突击队
+  if (reserveN) counts.reserve = reserveN;
+
+  var specs = [];
+  aiRoleIds.forEach(function (id) { specs.push({ id:id, idx:1 }); });
+  heavy.forEach(function (id) { for (var j = 2; j <= counts[id]; j++) specs.push({ id:id, idx:j }); });
+  for (var k = 1; k <= reserveN; k++) specs.push({ id:'reserve', idx:k });
+
+  var seats = [], pool = aiPool(n);
+  specs.forEach(function (sp, i) {
+    var r = roles[sp.id] || roles.reserve, flags = roleFlags(r);
+    seats.push({
+      key:'A' + i, roleId:sp.id, roleName:r.name, short:ALLOC_SHORT[sp.id] || r.name,
+      seatName:(ALLOC_SHORT[sp.id] || r.name) + (counts[sp.id] > 1 ? '-' + sp.idx : ''),
+      idx:sp.idx, total:counts[sp.id], human:false, enabled:true, ai:'',
+      boundary:boundaryOf(r, sp.idx, counts[sp.id], modules),
+      flags:flags, cls:classOf(flags), role:r
+    });
+  });
+  humanIds.forEach(function (id) {
+    if (!fullCoverage && !preset.roles[id]) return;
+    var r = roles[id], flags = roleFlags(r);
+    seats.push({
+      key:'H' + id, roleId:id, roleName:r.name, short:ALLOC_SHORT[id] || r.name,
+      seatName:ALLOC_SHORT[id] || r.name, idx:1, total:1, human:true, enabled:true,
+      ai:HUMAN_NAMES[id] || ('人工：' + r.name),
+      boundary:id === 'boss' ? '人工拍板，不执行 AI 工单'
+             : id === 'lead' ? '人工主理人（唯一），统筹与签字门④⑤'
+             : '人工独立验收，不写码、不构建、不兼主理人',
+      flags:flags, cls:'human', role:r
+    });
+  });
+
+  /* 按职责类分池：写码 / 审核 / 构建 / 其它，写码池与审核池严格不相交 */
+  var need = {}, alloc = {}, base = {};
+  CLASS_ORDER.forEach(function (c) {
+    need[c] = seats.filter(function (s) { return !s.human && s.cls === c; }).length;
+    alloc[c] = 0;
+  });
+  ['write','audit'].forEach(function (c) { if (need[c]) { alloc[c] = 1; } });
+  var used = alloc.write + alloc.audit;
+  if (used < n && need.neutral) { alloc.neutral = 1; used++; }
+  if (used < n && need.build) { alloc.build = 1; used++; }
+  var left = n - used;
+  while (left > 0) {
+    var best = null, score = -1;
+    CLASS_ORDER.forEach(function (c) {
+      if (!need[c]) return;
+      var sc = need[c] / (alloc[c] || 1);
+      if (sc > score) { score = sc; best = c; }
+    });
+    if (!best) break;
+    alloc[best]++; left--;
+  }
+  var cursor = 0;
+  CLASS_ORDER.forEach(function (c) { base[c] = cursor; cursor += alloc[c]; });
+  var fallback = base.neutral || 0;
+  CLASS_ORDER.forEach(function (c) {
+    seats.filter(function (s) { return !s.human && s.cls === c; }).forEach(function (s, j) {
+      var pos = alloc[c] > 0 ? base[c] + (j % alloc[c]) : fallback;
+      s.ai = pool[pos] || pool[0];
+    });
+  });
+
+  return {
+    count:n, modules:modules, preset:preset.name + '（' + presetKey + '）', mode:mode,
+    seats:seats, aiNames:pool, fullCoverage:fullCoverage, allRoleIds:allIds,
+    presetRoles:aiRoleIds.concat(humanIds.filter(function (id) { return fullCoverage || preset.roles[id]; })),
+    reserveN:reserveN
+  };
+}
+function autoPlan(c) {
+  return (allocation.seats || []).filter(function (s) { return !s.human && s.enabled && s.ai; })
+    .map(function (s, i) {
+      return {
+        id:'R' + (i + 1 < 10 ? '0' : '') + (i + 1),
+        grp:grpOf(s.flags), duty:s.boundary, gate:gateOf(s.flags), name:s.ai
+      };
+    });
+}
+function ruleViolations(seats) {
+  var errs = [], byAi = {}, build = {}, accept = {};
+  (seats || []).forEach(function (s) {
+    if (!s.enabled) return;
+    if (s.flags.can_build && !s.human) build[s.ai] = 1;
+    if (s.flags.can_accept) accept[s.human ? 'HUMAN_ACCEPT' : s.ai] = 1;
+    if (s.human || !s.ai) return;
+    var f = byAi[s.ai] || (byAi[s.ai] = {});
+    Object.keys(s.flags).forEach(function (k) { if (s.flags[k]) f[k] = true; });
+  });
+  Object.keys(byAi).forEach(function (ai) {
+    var f = byAi[ai];
+    if (f.can_write && f.can_audit) errs.push('写码≠审核：' + ai + ' 同时占写码与审核席');
+    if (f.can_build && f.can_accept) errs.push('构建≠验收：' + ai + ' 同时占构建与独立验收席');
+  });
+  Object.keys(build).forEach(function (ai) {
+    if (accept[ai]) errs.push('构建≠验收：' + ai + ' 同时占构建与独立验收席');
+  });
+  var lead = (seats || []).filter(function (s) { return s.enabled && s.roleId === 'lead'; });
+  if (lead.length !== 1) errs.push('主理人唯一：当前 ' + lead.length + ' 席');
+  var boss = (seats || []).filter(function (s) { return s.enabled && s.roleId === 'boss'; });
+  if (boss.length !== 1 || boss.some(function (s) { return !s.human; })) errs.push('大BOSS 必须人工且唯一');
+  var acc = (seats || []).filter(function (s) { return s.enabled && s.roleId === 'independent_acceptor'; });
+  if (acc.length !== 1 || acc.some(function (s) { return !s.human; }))
+    errs.push('独立验收人必须人工，且不兼写码/构建/主理人');
+  return errs;
+}
+/* v4.60 R1：未启用岗位 = 岗位目录 23 岗 − 已有启用席位的岗位；不再用「已启用岗位都有人」冒充全覆盖 */
+function uncoveredRoles() {
+  var all = flatRoles(getCatalog()), have = {};
+  (allocation.seats || []).forEach(function (s) {
+    if (s.enabled && s.roleId !== 'reserve') have[s.roleId] = 1;
+  });
+  return Object.keys(all).filter(function (id) { return !have[id]; });
+}
+function coverageSummary() {
+  var all = flatRoles(getCatalog()), total = Object.keys(all).length;
+  var miss = uncoveredRoles();
+  if (!miss.length) return '岗位全覆盖：' + total + ' 岗均有席位';
+  return '岗位覆盖：' + total + ' 岗中 ' + (total - miss.length) + ' 岗有席；未启用 ' +
+         miss.length + ' 岗：' + miss.map(function (id) { return all[id].name; }).join('、');
+}
+function allocationWarnings() {
+  var seats = allocation.seats || [], n = allocation.count || 3, w = [];
+  var enabled = seats.filter(function (s) { return s.enabled; });
+  var aiSeats = enabled.filter(function (s) { return !s.human; });
+  if (aiSeats.length < n) w.push('还有 ' + (n - aiSeats.length) + ' 个 AI 未分配席位：请启用席位或点「重新分配」');
+  if (aiSeats.length > n) w.push('席位 ' + aiSeats.length + ' 个 > AI ' + n + ' 个：已标「兼」，同一 AI 只在同一职责类内兼岗');
+  var empty = aiSeats.filter(function (s) { return !s.ai; });
+  if (empty.length) w.push(empty.length + ' 个 AI 席位未填顶岗 AI');
+  var disabled = seats.filter(function (s) { return !s.enabled; });
+  if (disabled.length) w.push('已停用 ' + disabled.length + ' 席，岗位覆盖可能有缺口');
+  if (rosterState.raw && !rosterState.errors.length && rosterState.ais.length < n)
+    w.push('名单只有 ' + rosterState.ais.length + ' 个 AI，少于当前 ' + n + ' 档；其余用占位名 AI-xx');
+  if (rosterState.raw && !rosterState.errors.length && rosterState.ais.length > n)
+    w.push('名单有 ' + rosterState.ais.length + ' 个 AI，多于当前 ' + n + ' 档；按前 ' + n + ' 个分配，建议切档');
+  var reserve = enabled.filter(function (s) { return s.roleId === 'reserve'; });
+  if (reserve.length)
+    w.push('多出的 AI 归入机动/突击队（' + reserve.length + ' 席），按任务临时派；不占固定岗位，不承担写码/审核/构建/验收核心职责（降级规则，待 DSH 裁决）');
+  ruleViolations(seats).forEach(function (e) { w.push('规则冲突：' + e); });
+  w.push(coverageSummary());   // v4.60：只按实际覆盖说话，没有全覆盖证据时不写「全都有人」
+  return w;
+}
+function coverageRowsData() {
+  var map = {};
+  (allocation.seats || []).forEach(function (s) {
+    if (!s.enabled) return;
+    var e = map[s.roleId] || (map[s.roleId] = { id:s.roleId, name:s.roleName, ais:[], n:0 });
+    e.n++;
+    if (s.ai && e.ais.indexOf(s.ai) < 0) e.ais.push(s.ai);
+  });
+  return Object.keys(map).map(function (k) { return map[k]; }).map(function (e) {
+    return { id:e.id, name:e.name, ais:e.ais.length ? e.ais.join('、') : '____', n:e.n };
+  });
+}
+function coverageRows() {
+  return coverageRowsData().map(function (r) {
+    return '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.id) + '</td><td>' +
+           escHtml(r.ais) + '</td><td>' + r.n + '</td></tr>';
+  });
+}
+function warningHtml() {
+  var w = allocationWarnings();
+  if (w.length === 1 && w[0].indexOf('岗位全覆盖') === 0) return '<div class="alloc-ok">' + escHtml(w[0]) + '</div>';
+  return '<div class="alloc-warn">' + w.map(function (x) { return '· ' + escHtml(x); }).join('<br>') + '</div>';
+}
+var SEAT_NOTE = '席位号：R01–R30 为自动分配序号，族信息见顶岗职责（写码/审核/构建/中立）。';
+function allocFragment(withMeta) {
+  var enabled = (allocation.seats || []).filter(function (s) { return s.enabled; });
+  var cnt = {};
+  enabled.forEach(function (s) { if (!s.human && s.ai) cnt[s.ai] = (cnt[s.ai] || 0) + 1; });
+  var seatRows = enabled.map(function (s) {
+    return '| ' + s.roleName + ' | ' + s.seatName + ' | ' + s.ai + ' | ' +
+           (!s.human && cnt[s.ai] > 1 ? '兼' : '否') + ' |';
+  });
+  var coverRows = coverageRowsData().map(function (r) {
+    return '| ' + r.name + ' | ' + r.id + ' | ' + r.ais + ' | ' + r.n + ' |';
+  });
+  if (withMeta) {
+    /* 复制 / 下载片段：保留完整四小节 */
+    var lines = [];
+    lines.push('## AI 数量与名单（S-1 自动岗位分配）');
+    lines.push('AI 数量：' + allocation.count + '（主理人固定 1 个）');
+    lines.push('AI 名单：' + allocation.aiNames.join('、'));
+    lines.push('分配档：' + allocation.preset + '；模式：' + allocation.mode + '；项目模块数：' + allocation.modules);
+    lines.push(SEAT_NOTE);
+    lines.push('', '## 席位表（自动岗位分配）',
+               '| 岗位 | 席位名 | 顶岗AI | 是否兼岗 |', '|---|---|---|---|');
+    seatRows.forEach(function (x) { lines.push(x); });
+    lines.push('', '## 岗位覆盖表（S-1 自动生成后粘贴）',
+               '| 岗位 | 岗位ID | 顶岗 AI | 席位数 |', '|---|---|---|---|');
+    coverRows.forEach(function (x) { lines.push(x); });
+    lines.push('', '## 每席任务边界（S-1 自动生成后粘贴）',
+               '| 席位名 | 任务边界 |', '|---|---|');
+    enabled.forEach(function (s) { lines.push('| ' + s.seatName + ' | ' + s.boundary + ' |'); });
+    lines.push('', '## 缺口 / 超载提示');
+    allocationWarnings().forEach(function (x) { lines.push('- ' + x); });
+    return lines;
+  }
+  /* v4.60 R3/R4：generate() 用的紧凑版——只有一张席位表、任务边界按岗位归并、无冗余空行 */
+  var out = [];
+  out.push(SEAT_NOTE);
+  out.push('AI 名单：' + allocation.aiNames.join('、'));
+  out.push('## 席位表（自动岗位分配）', '| 岗位 | 席位名 | 顶岗AI | 是否兼岗 |', '|---|---|---|---|');
+  seatRows.forEach(function (x) { out.push(x); });
+  out.push('## 岗位覆盖表（S-1 自动生成后粘贴）', '| 岗位 | 岗位ID | 顶岗 AI | 席位数 |', '|---|---|---|---|');
+  coverRows.forEach(function (x) { out.push(x); });
+  out.push('## 每席任务边界（S-1 自动生成后粘贴）');
+  var byRole = {};
+  enabled.forEach(function (s) {
+    (byRole[s.roleId] || (byRole[s.roleId] = [])).push(s.seatName + '：' + s.boundary);
+  });
+  Object.keys(byRole).forEach(function (id) { out.push('- ' + byRole[id].join('；')); });
+  out.push('## 缺口 / 超载提示');
+  allocationWarnings().forEach(function (x) { out.push('- ' + x); });
+  return out;
+}
+function refreshDerivedAlloc() {
+  var seats = allocation.seats || [], cnt = {};
+  seats.forEach(function (s) { if (!s.human && s.enabled && s.ai) cnt[s.ai] = (cnt[s.ai] || 0) + 1; });
+  var tbody = document.getElementById('allocSeatBody');
+  if (tbody) Array.prototype.forEach.call(tbody.children, function (tr, i) {
+    var s = seats[i], cell = tr.querySelector('td.jian');
+    if (s && cell) cell.textContent = (!s.human && s.enabled && cnt[s.ai] > 1) ? '兼' : '—';
+  });
+  var cov = document.getElementById('allocCoverage'); if (cov) cov.innerHTML = coverageRows().join('');
+  var warn = document.getElementById('allocWarn'); if (warn) warn.innerHTML = warningHtml();
+  var out = document.getElementById('allocOut'); if (out) out.value = allocFragment(true).join('\n');
+}
+function renderAllocPreview() {
+  var box = document.getElementById('allocPreview'); if (!box) return;
+  var seats = allocation.seats || [], cnt = {};
+  seats.forEach(function (s) { if (!s.human && s.enabled && s.ai) cnt[s.ai] = (cnt[s.ai] || 0) + 1; });
+  var h = [];
+  h.push('<div class="alloc-sec"><h3>席位表（岗位 / 席位名 / 顶岗AI / 是否兼岗；可改、可启停）</h3>',
+         '<table><thead><tr><th style="width:44px">启停</th><th>岗位</th><th>席位名</th><th>顶岗 AI</th><th style="width:64px">兼岗</th></tr></thead><tbody id="allocSeatBody">');
+  seats.forEach(function (s, i) {
+    var jian = (!s.human && s.enabled && cnt[s.ai] > 1) ? '兼' : '—';
+    h.push('<tr><td><input type="checkbox" data-on="' + i + '" ' + (s.enabled ? 'checked' : '') + '></td>' +
+           '<td>' + escHtml(s.roleName) + '</td><td>' + escHtml(s.seatName) + '</td><td>' +
+           (s.human ? '<span class="roster-meta">' + escHtml(s.ai) + '</span>'
+                    : '<input class="nm" data-ai="' + i + '" value="' + escHtml(s.ai) + '" placeholder="AI 名字">') +
+           '</td><td class="jian">' + jian + '</td></tr>');
+  });
+  h.push('</tbody></table></div>',
+         '<div class="alloc-sec"><h3>岗位覆盖表（岗位 → AI）</h3>',
+         '<table><thead><tr><th>岗位</th><th>岗位ID</th><th>顶岗 AI</th><th>席位数</th></tr></thead><tbody id="allocCoverage"></tbody></table></div>',
+         '<div class="alloc-sec"><h3>每席任务边界（一句话）</h3>',
+         '<table><thead><tr><th>席位名</th><th>任务边界</th></tr></thead><tbody>');
+  seats.filter(function (s) { return s.enabled; }).forEach(function (s) {
+    h.push('<tr><td>' + escHtml(s.seatName) + '</td><td>' + escHtml(s.boundary) + '</td></tr>');
+  });
+  h.push('</tbody></table></div>',
+         '<div class="alloc-sec"><h3>缺口 / 超载提示</h3><div id="allocWarn"></div></div>');
+  box.innerHTML = h.join('');
+  box.querySelectorAll('input[data-ai]').forEach(function (inp) {
+    inp.addEventListener('input', function () {
+      var s = allocation.seats[Number(inp.getAttribute('data-ai'))];
+      if (s) { s.ai = inp.value.trim(); refreshDerivedAlloc(); }
+    });
+  });
+  box.querySelectorAll('input[data-on]').forEach(function (inp) {
+    inp.addEventListener('change', function () {
+      var s = allocation.seats[Number(inp.getAttribute('data-on'))];
+      if (s) { s.enabled = inp.checked; renderAllocPreview(); renderRoles(); }
+    });
+  });
+  refreshDerivedAlloc();
+}
+function refreshAllocation() {
+  var n = Number(currentCount()) || 3;
+  var modEl = document.getElementById('moduleCount'), def = defaultModules(n);
+  if (modEl && modEl.dataset.touched !== '1') modEl.value = def;
+  var modules = Math.max(1, Math.min(60, Number(modEl && modEl.value) || def));
+  if (modEl) modEl.value = modules;
+  allocation = buildAllocation(n, modules);
+  renderAllocPreview();
+  renderRoles();
+}
+function copyAlloc() {
+  var out = document.getElementById('allocOut');
+  refreshDerivedAlloc();
+  out.select();
+  try { document.execCommand('copy'); document.getElementById('tip').textContent = '岗位分配片段已复制。'; }
+  catch (e) { document.getElementById('tip').textContent = '复制失败，请手动 Ctrl+C。'; }
+}
+function downloadAlloc() {
+  var text = allocFragment(true).join('\n');
+  var blob = new Blob([text], { type:'text/markdown;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = '00_环境_岗位分配片段.md';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 0);
+}
+function onCountChanged() {
+  updateCountHint();
+  refreshAllocation();
+  if (rosterState.raw && !rosterState.errors.length) applyRosterToSeats();
+  else renderRoles();
+  if (rosterState.raw) renderRoster();
+}
+
+renderRoster();
+refreshAllocation();
+renderRoles();
+</script>
+</body>
+</html>

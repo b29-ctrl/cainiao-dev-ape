@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<!-- 技能包当前版本：v4.60（文件内 v4.52 注释为功能引入标记，属历史登记） -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>问卷引擎 · 模型驱动（基准实现）</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:15px/1.6 "Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:#f5f6f8;color:#1f2328;padding:24px 16px 90px}
+  .wrap{max-width:860px;margin:0 auto}
+  h1{font-size:24px}
+  .lead{color:#6b7280;font-size:13px;margin:6px 0 16px}
+  .step{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:20px;padding:3px 12px;font-size:12px;margin:18px 0 10px}
+  .blk,.q{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+  .q.risk{border-left:5px solid #dc2626}
+  .q.exclude{border-left:5px solid #334155;background:#f8fafc}
+  .q.exclude h2{font-size:20px}
+  .q.exclude h2::before{content:"反向题 · 勾选＝不要";display:inline-block;background:#334155;color:#fff;
+    border-radius:20px;padding:3px 11px;margin-right:9px;font-size:12px;font-weight:400;vertical-align:3px}
+  h2{font-size:16px;margin-bottom:4px}
+  .why{color:#b45309;font-size:12.5px;margin-bottom:9px}
+  .opt{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border:1px solid #eef0f3;border-radius:9px;margin-bottom:6px;cursor:pointer}
+  .opt:hover{background:#f9fafb}
+  .opt input{margin-top:3px;width:16px;height:16px}
+  .opt small{display:block;color:#8b95a5;font-size:12px;margin-top:2px}
+  .blkhead{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+  .blkhead input{margin-top:3px;width:18px;height:18px}
+  .blkhead small{display:block;color:#8b95a5;font-size:12px;margin-top:1px;font-weight:400}  .body{display:none;padding:10px 0 0 30px}
+  .blk.open .body{display:block}
+  .fn{display:flex;gap:9px;align-items:flex-start;padding:7px 10px;border:1px solid #f1f3f6;border-radius:8px;margin-bottom:6px}
+  .fn input{margin-top:3px;width:15px;height:15px}
+  .fn small{display:block;color:#8b95a5;font-size:12px;margin-top:1px}
+  .fn .id{font:11px ui-monospace,Consolas,monospace;color:#94a3b8;margin-left:auto;white-space:nowrap}
+  .fn.candidate{background:#f5f9ff;border-color:#bfdbfe}
+  .fn.skipped{opacity:.45;text-decoration:line-through}
+  .fn.skipped input{pointer-events:none}
+  .tag{display:inline-block;font-size:10.5px;border-radius:5px;padding:1px 6px;margin-left:6px}
+  .t-ok{background:#ecfdf5;color:#047857}
+  .t-ai{background:#eff6ff;color:#1d4ed8}
+  .t-tbd{background:#fffbeb;color:#b45309}
+  .t-no{background:#f3f4f6;color:#9ca3af}
+  .fillrow{margin:8px 0 4px;display:flex;gap:8px}
+  .fillbtn{font-size:12px;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:4px 10px;cursor:pointer}
+  .otherfn{margin-top:8px;display:flex;gap:8px;align-items:center}
+  .otherfn input{flex:1;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font:inherit;font-size:13.5px}
+  /* v4.52：附件（只记文件名）与每板块「其他功能」 */
+  .attachbox{margin-top:8px;border-top:1px dashed #e5e7eb;padding-top:8px}
+  .attachbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .attachbtn{display:inline-block;font-size:12px;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:4px 10px;cursor:pointer}
+  .attachbtn input[type=file]{display:none}
+  .attachhint{color:#6b7280;font-size:12px}
+  .attachlist{list-style:none;margin:6px 0 0;font-size:12.5px;color:#374151}
+  .attachlist li{display:flex;gap:8px;align-items:center;padding:2px 0}
+  .attachlist button{padding:1px 8px;font-size:11px;border-radius:6px}
+  .otherfnbox{margin-top:10px;border:1px dashed #cbd5e1;border-radius:9px;padding:10px;background:#fcfdff}
+  .otherfnbox h4{font-size:13px;margin-bottom:6px;color:#334155}
+  textarea.othertext{width:100%;height:56px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font:inherit;font-size:13px;resize:vertical}
+  #err{display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:12px}
+  #err b{color:#b91c1c}
+  #err ul{margin:8px 0 0 18px;font-size:13px;color:#7f1d1d}
+  #out{width:100%;height:240px;padding:12px;border:1px solid #d1d5db;border-radius:10px;
+       font:12.5px/1.6 ui-monospace,Consolas,monospace;display:none}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;padding:12px;display:flex;gap:10px;justify-content:center}
+  button{font:inherit;padding:10px 20px;border-radius:10px;border:1px solid #d1d5db;background:#fff;cursor:pointer}
+  button.main{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:600}
+  .hint{color:#6b7280;font-size:13px;margin-top:8px}
+  textarea.material{width:100%;height:80px;padding:10px;border:1px solid #d1d5db;border-radius:9px;font:inherit;font-size:13.5px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="ptitle">问卷</h1>
+  <p class="lead">模型驱动：题目、选项、互斥全部在 <b>MODEL</b> 里。渲染、板块选择、候选确认、校验由本引擎完成。<b>模型不合规在渲染前被拒绝（fail-closed）</b>。</p>
+
+  <div id="modelerr" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+    <b style="color:#b91c1c">模型不合法，问卷未渲染：</b><ul id="modelerrlist" style="margin:8px 0 0 18px;font-size:13px;color:#7f1d1d"></ul>
+  </div>
+
+  <div id="app">
+    <span class="step">第 0 步 · 有没有现成材料</span>
+    <div class="q">
+      <h2>0. 你手上有没有已经想好的东西？</h2>
+      <p class="why">有就先贴，我复述后再只问缺口；没有就直接往下填。</p>
+      <textarea class="material" id="material" placeholder="已有的需求、想法、参考链接，可留空"></textarea>
+      <div class="attachbox">
+        <div class="attachbar">
+          <label class="attachbtn">＋ 上传附件<input type="file" id="q0File" multiple></label>
+          <span class="attachhint">大文件请放进 ⟨项目目录⟩\附件\，这里只记文件名</span>
+        </div>
+        <ul class="attachlist" id="q0List" data-list="Q0"></ul>
+      </div>
+    </div>
+
+    <span class="step">第 1 步 · 板块与功能（先勾板块，再勾功能；灰字划线=明确不做）</span>
+    <div class="fillrow"><span class="fillbtn" id="fillAll">我不懂，全部按常规勾</span></div>
+    <div id="blocks"></div>
+    <div class="q">
+      <h2>其他板块 / 其他功能</h2>
+      <div class="otherfn"><span>板块：</span><input id="otherBlock" placeholder="上面没有的板块，逗号隔开"></div>
+      <div class="otherfn"><span>功能：</span><input id="otherFn" placeholder="上面没有的功能，逗号隔开"></div>
+    </div>
+
+    <span class="step">第 2 步 · 取舍（风险题，必答）</span>
+    <div id="questions"></div>
+
+    <span class="step">第 3 步 · 明确不做</span>
+    <div id="excludes"></div>
+
+    <div id="err"><b>无法生成答案：</b><ul id="errlist"></ul></div>
+    <textarea id="out" spellcheck="false"></textarea>
+    <p class="hint" id="hint"></p>
+  </div>
+</div>
+<div class="bar">
+  <button class="main" onclick="build()">生成答案</button>
+  <button onclick="copyOut()">复制</button>
+</div>
+
+<script>
+/* ===================== 模型（换品类只改这一段） ===================== */
+var MODEL = {
+  meta: { product: '小组值班表', category: 'DUTY', version: 'v1.0' },
+  blocks: [
+    { id: 'SHIFT', name: '排班', note: '每天 2 人，组长排' },
+    { id: 'SWAP',  name: '换班', note: '临时有事，在线换' }
+  ],
+  funcs: [
+    { id: 'B-DUTY-SHIFT-01', block: 'SHIFT', name: '组长按日期排 2 人', source: '主理人确认', status: '必做' },
+    { id: 'B-DUTY-SHIFT-02', block: 'SHIFT', name: '一键顺延到下一周期', source: 'AI建议',   status: '二期' },
+    { id: 'B-DUTY-SHIFT-03', block: 'SHIFT', name: '查看本月排班表', source: '主理人确认', status: '必做' },
+    { id: 'B-DUTY-SHIFT-04', block: 'SHIFT', name: '冲突检测（同人同日两次）', source: 'AI建议', status: '二期' },
+    { id: 'B-DUTY-SWAP-01',  block: 'SWAP',  name: '组员发起换班申请', source: '主理人确认', status: '必做' },
+    { id: 'B-DUTY-SWAP-02',  block: 'SWAP',  name: '组长同意/拒绝', source: '主理人确认', status: '必做' },
+    { id: 'B-DUTY-SWAP-03',  block: 'SWAP',  name: '换班记录留痕', source: 'AI建议', status: '二期' },
+    { id: 'B-DUTY-SWAP-04',  block: 'SWAP',  name: '换班后自动改排班', source: '主理人确认', status: '必做' },
+    { id: 'B-DUTY-SHIFT-05', block: 'SHIFT', name: '考勤打卡', source: '主理人确认', status: '不做' }
+  ],
+  questions: [
+    { qid: 'Q1', kind: 'plain', type: 'single', required: true,
+      title: '1. 这份排班要不要给 6 个人共享看？',
+      why: '共享 = 必须上后端；不共享就只是"一个人自己看的表格"，产品完全不同。',
+      options: [
+        { oid: 'O-SHARE-Y', label: '要共享，6 个人看同一份', note: '需要后端与账号', conflicts: ['O-LOCAL'], requires: [] },
+        { oid: 'O-LOCAL',   label: '不共享，只组长自己看', note: '纯本地，成本最低', conflicts: ['O-SHARE-Y'], requires: [] }
+      ] },
+    { qid: 'R1', kind: 'risk', type: 'single', required: true,
+      title: 'R1. 提醒怎么做？',
+      why: '短信/推送要第三方服务与费用；站内提醒零成本但用户可能看不到。',
+      options: [
+        { oid: 'O-REMIND-IN',   label: '只做站内提醒', note: '打开才看到，零成本', conflicts: [], requires: [] },
+        { oid: 'O-REMIND-PUSH', label: '要做手机推送', note: '要推送服务，成本与审核上升', conflicts: [], requires: ['O-SHARE-Y'] }
+      ] },
+    { qid: 'R2', kind: 'risk', type: 'single', required: true,
+      title: 'R2. 组员能不能替别人发起换班？',
+      why: '允许代发起就要做"授权委托"，权限模型复杂一倍。',
+      options: [
+        { oid: 'O-ONLY-SELF', label: '只能替自己发起', note: '权限最简单', conflicts: ['O-ANY-ONE'], requires: [] },
+        { oid: 'O-ANY-ONE',   label: '可以替任何人发起', note: '需要委托与审计', conflicts: ['O-ONLY-SELF'], requires: [] }
+      ] },
+    { qid: 'X1', kind: 'exclude', type: 'multi', required: false,
+      title: 'X1. 下面这些你明确不要？',
+      why: '',
+      options: [
+        { oid: 'O-NO-ATTEND',  label: '考勤打卡', conflicts: [], requires: [] },
+        { oid: 'O-NO-PAY',     label: '工资核算', conflicts: [], requires: [] },
+        { oid: 'O-NO-LEAVE',   label: '请假审批', conflicts: [], requires: [] },
+        { oid: 'O-NO-ACCOUNT', label: '不要账号登录', note: '与「共享」互斥', conflicts: ['O-SHARE-Y'], requires: [] }
+      ] }
+  ]
+};
+/* ==================================================================== */
+
+var SRC_OK = ['材料', 'AI建议', '主理人确认'];
+var STA_OK = ['必做', '二期', '不做', '待确认'];
+var SRC_STA = { 'AI建议': ['待确认', '二期'], '主理人确认': ['必做', '二期', '不做'], '材料': ['必做', '二期', '不做'] };
+var KIND_OK = ['plain', 'risk', 'exclude'];
+var TYPE_OK = ['single', 'multi'];
+var NAME = {};
+var picked = {};
+var funcChecked = {};      // fid -> bool
+var blockChecked = {};     // blockId -> bool
+var attachments = {};      // v4.52：Q0 / 板块ID -> [{name,label,size}]；只存文件名与大小，不读内容
+
+function text(el, s) { el.textContent = s; }
+
+/* ===== v4.52 附件：只记文件名；重名标（2）（3）；可单个移除 ===== */
+var ATTACH_HINT = '大文件请放进 ⟨项目目录⟩\\附件\\，这里只记文件名';
+function fmtSize(n) {
+  n = Number(n) || 0;
+  return n < 1024 ? n + ' B' : n < 1024 * 1024 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+}
+function attachNames(key) {
+  return (attachments[key] || []).map(function (x) { return x.label; });
+}
+function addAttachments(key, files) {
+  var arr = attachments[key] || (attachments[key] = []);
+  Array.prototype.forEach.call(files || [], function (f) {
+    if (!f || !f.name) return;
+    var label = f.name, i = 2;
+    while (arr.some(function (x) { return x.label === label; })) label = f.name + '（' + (i++) + '）';
+    arr.push({ name: f.name, label: label, size: Number(f.size) || 0 });
+  });
+  renderAttachList(key);
+}
+function renderAttachList(key) {
+  var ul = document.querySelector('[data-list="' + key + '"]');
+  if (!ul) return;
+  ul.innerHTML = '';
+  (attachments[key] || []).forEach(function (x, idx) {
+    var li = document.createElement('li');
+    var sp = document.createElement('span'); text(sp, x.label + '（' + fmtSize(x.size) + '）');
+    var btn = document.createElement('button'); btn.type = 'button'; text(btn, '移除');
+    btn.addEventListener('click', function () { attachments[key].splice(idx, 1); renderAttachList(key); });
+    li.append(sp, btn); ul.append(li);
+  });
+}
+function makeAttachBox(key) {
+  var box = document.createElement('div'); box.className = 'attachbox';
+  var bar = document.createElement('div'); bar.className = 'attachbar';
+  var lab = document.createElement('label'); lab.className = 'attachbtn'; text(lab, '＋ 上传附件');
+  var fi = document.createElement('input'); fi.type = 'file'; fi.multiple = true;
+  fi.setAttribute('data-file', key);
+  lab.append(fi); bar.append(lab);
+  var hint = document.createElement('span'); hint.className = 'attachhint'; text(hint, ATTACH_HINT);
+  bar.append(hint); box.append(bar);
+  var ul = document.createElement('ul'); ul.className = 'attachlist'; ul.setAttribute('data-list', key);
+  box.append(ul);
+  fi.addEventListener('change', function () { addAttachments(key, fi.files); fi.value = ''; });
+  return box;
+}
+
+function modelErrors() {
+  var e = [], ids = {};
+  MODEL.blocks.forEach(function (b) {
+    if (ids[b.id]) e.push('板块 ID 重复：' + b.id); else ids[b.id] = 1;
+  });
+  MODEL.funcs.forEach(function (f) {
+    var k = 'F:' + f.id;
+    if (ids[k]) e.push('功能 ID 重复：' + f.id); else ids[k] = 1;
+    if (SRC_OK.indexOf(f.source) < 0) e.push(f.id + ' 来源非法：' + f.source);
+    if (STA_OK.indexOf(f.status) < 0) e.push(f.id + ' 状态非法：' + f.status);
+    if (!SRC_STA[f.source] || SRC_STA[f.source].indexOf(f.status) < 0)
+      e.push(f.id + ' 来源×状态组合非法：' + f.source + ' × ' + f.status);
+    if (!MODEL.blocks.some(function (b) { return b.id === f.block; })) e.push(f.id + ' 引用不存在的板块：' + f.block);
+  });
+  MODEL.questions.forEach(function (q) {
+    if (ids[q.qid]) e.push('题目 ID 重复：' + q.qid); else ids[q.qid] = 1;
+    if (KIND_OK.indexOf(q.kind) < 0) e.push(q.qid + ' kind 非法：' + q.kind);
+    if (TYPE_OK.indexOf(q.type) < 0) e.push(q.qid + ' type 非法：' + q.type);
+    if (!q.options || !q.options.length) { e.push(q.qid + ' 没有选项'); q.options = []; return; }
+    if (q.kind === 'risk' && q.required !== true) e.push(q.qid + ' 是风险题但未设 required=true');
+    if (q.kind === 'risk' && !q.why) e.push(q.qid + ' 是风险题但缺 why');
+    var seen = {};
+    q.options.forEach(function (o) {
+      if (seen[o.oid]) e.push(q.qid + ' 选项 ID 重复：' + o.oid); else seen[o.oid] = 1;
+      if (NAME[o.oid]) e.push('选项 ID 跨题重复：' + o.oid); else NAME[o.oid] = o.label;
+    });
+  });
+  MODEL.questions.forEach(function (q) {
+    (q.options || []).forEach(function (o) {
+      (o.conflicts || []).forEach(function (c) { if (!NAME[c]) e.push(q.qid + ':' + o.oid + ' conflicts 孤儿：' + c); });
+      (o.requires || []).forEach(function (r) { if (!NAME[r]) e.push(q.qid + ':' + o.oid + ' requires 孤儿：' + r); });
+    });
+  });
+  return e;
+}
+
+function render() {
+  var me;
+  try {
+    me = modelErrors();
+  } catch (err) {
+    me = ['模型校验阶段异常：' + (err && err.message ? err.message : err)];
+  }
+  if (me.length) {
+    document.getElementById('modelerr').style.display = 'block';
+    var ul = document.getElementById('modelerrlist'); ul.innerHTML = '';
+    me.forEach(function (x) { var li = document.createElement('li'); text(li, x); ul.append(li); });
+    document.getElementById('app').style.display = 'none';
+    return;
+  }
+
+  text(document.getElementById('ptitle'), MODEL.meta.product + ' · 需求问卷');
+  document.title = MODEL.meta.product + ' · 需求问卷';
+
+  var wrap = document.getElementById('blocks');
+  MODEL.blocks.forEach(function (b) {
+    var box = document.createElement('div'); box.className = 'blk'; box.setAttribute('data-block', b.id);
+    var head = document.createElement('label'); head.className = 'blkhead';
+    var cb = document.createElement('input'); cb.type = 'checkbox';
+    var hd = document.createElement('div');
+    var hb = document.createElement('b'); text(hb, b.name);
+    var hs = document.createElement('small'); text(hs, b.note);
+    hd.append(hb, hs);
+    var fill = document.createElement('span'); fill.className = 'fillbtn'; text(fill, '本板块按常规勾');
+    head.append(cb, hd);
+    var body = document.createElement('div'); body.className = 'body';
+    var h4 = document.createElement('h4'); text(h4, '里面要哪些功能'); body.append(h4);
+
+    MODEL.funcs.filter(function (f) { return f.block === b.id; }).forEach(function (f) {
+      var row = document.createElement('label');
+      row.className = 'fn' + (f.status === '待确认' ? ' candidate' : '') + (f.status === '不做' ? ' skipped' : '');
+      var inp = document.createElement('input'); inp.type = 'checkbox'; inp.setAttribute('data-fid', f.id);
+      if (f.status === '不做') inp.disabled = true;
+      if (f.status === '必做') { inp.checked = true; funcChecked[f.id] = true; }
+      var dv = document.createElement('div');
+      var nm = document.createElement('div'); text(nm, f.name);
+      var mt = document.createElement('small');
+      text(mt, f.source + ' · ' + (f.status === '待确认' ? 'AI 建议，勾选=确认采用' : (f.status === '二期' ? '二期，勾选=纳入本期' : f.status)));
+      dv.append(nm, mt);
+      var id = document.createElement('span'); id.className = 'id'; text(id, f.id);
+      var tg = document.createElement('span');
+      tg.className = 'tag ' + (f.status === '待确认' ? 't-tbd' : f.status === '不做' ? 't-no' : f.status === '二期' ? 't-ai' : 't-ok');
+      text(tg, f.status);
+      row.append(inp, dv, id, tg);
+      body.append(row);
+    });
+
+    /* v4.52 R2：每个板块功能清单最底下加「其他功能」自由文本 + 附件 */
+    var otherBox = document.createElement('div'); otherBox.className = 'otherfnbox';
+    var oh = document.createElement('h4'); text(oh, '其他功能（清单里没有、但你需要的能力）'); otherBox.append(oh);
+    var ota = document.createElement('textarea'); ota.className = 'othertext';
+    ota.setAttribute('data-other', b.id);
+    ota.placeholder = '清单里没有、但你需要的能力？例如：导出 Excel';
+    otherBox.append(ota, makeAttachBox(b.id));
+    body.append(otherBox);
+
+    var fillrow = document.createElement('div'); fillrow.className = 'fillrow';
+    fillrow.append(fill);
+    body.prepend(fillrow);
+
+    box.append(head, body);
+    wrap.append(box);
+
+    cb.addEventListener('change', function () {
+      blockChecked[b.id] = cb.checked;
+      box.classList.toggle('open', cb.checked);
+      if (!cb.checked) {
+        MODEL.funcs.filter(function (f) { return f.block === b.id; }).forEach(function (f) {
+          funcChecked[f.id] = false;
+          var x = body.querySelector('input[data-fid="' + f.id + '"]');
+          if (x) x.checked = false;
+        });
+      }
+    });
+
+    fill.addEventListener('click', function (e) {
+      e.stopPropagation();
+      cb.checked = true; blockChecked[b.id] = true; box.classList.add('open');
+      MODEL.funcs.filter(function (f) { return f.block === b.id && f.status === '必做'; }).forEach(function (f) {
+        funcChecked[f.id] = true;
+        body.querySelector('input[data-fid="' + f.id + '"]').checked = true;
+      });
+    });
+  });
+
+  document.querySelectorAll('input[data-fid]').forEach(function (inp) {
+    inp.addEventListener('change', function () {
+      funcChecked[inp.dataset.fid] = inp.checked;
+      var f = MODEL.funcs.find(function (x) { return x.id === inp.dataset.fid; });
+      if (f && inp.checked) { blockChecked[f.block] = true; }
+    });
+  });
+
+  document.getElementById('fillAll').addEventListener('click', function () {
+    MODEL.blocks.forEach(function (b) {
+      blockChecked[b.id] = true;
+      var box = document.querySelector('.blk[data-block="' + b.id + '"]');
+      box.classList.add('open');
+      var cb = box.querySelector('.blkhead input'); cb.checked = true;
+      MODEL.funcs.filter(function (f) { return f.block === b.id && f.status === '必做'; }).forEach(function (f) {
+        funcChecked[f.id] = true;
+        box.querySelector('input[data-fid="' + f.id + '"]').checked = true;
+      });
+    });
+  });
+
+  var qwrap = document.getElementById('questions');
+  MODEL.questions.filter(function (q) { return q.kind !== 'exclude'; }).forEach(function (q) { qwrap.append(buildQuestion(q)); });
+  var xwrap = document.getElementById('excludes');
+  MODEL.questions.filter(function (q) { return q.kind === 'exclude'; }).forEach(function (q) { xwrap.append(buildQuestion(q)); });
+
+  if (location.search.indexOf('conflict') >= 0) demoConflict();
+}
+
+function buildQuestion(q) {
+  var box = document.createElement('div');
+  box.className = 'q' + (q.kind === 'risk' ? ' risk' : q.kind === 'exclude' ? ' exclude' : '');
+  var h = document.createElement('h2'); text(h, q.title);
+  if (q.required) { var rq = document.createElement('span'); rq.className = 'tag t-tbd'; text(rq, '必答'); h.append(rq); }
+  box.append(h);
+  if (q.why) { var w = document.createElement('p'); w.className = 'why'; text(w, q.why); box.append(w); }
+  q.options.forEach(function (o) {
+    var lm = document.createElement('label'); lm.className = 'opt';
+    var inp = document.createElement('input');
+    inp.type = q.type === 'multi' ? 'checkbox' : 'radio';
+    inp.name = q.qid; inp.setAttribute('data-qid', q.qid); inp.setAttribute('data-oid', o.oid);
+    var dv = document.createElement('div');
+    var lb = document.createElement('div'); text(lb, o.label);
+    dv.append(lb);
+    if (o.note) { var sm = document.createElement('small'); text(sm, o.note); dv.append(sm); }
+    var id = document.createElement('span'); id.className = 'id'; text(id, o.oid);
+    lm.append(inp, dv, id);
+    box.append(lm);
+  });
+  return box;
+}
+
+document.addEventListener('change', function (e) {
+  var inp = e.target;
+  if (!inp.getAttribute || !inp.getAttribute('data-qid')) return;
+  var qid = inp.getAttribute('data-qid');
+  var q = MODEL.questions.find(function (x) { return x.qid === qid; });
+  if (q.type === 'multi') {
+    var arr = picked[qid] || [];
+    if (inp.checked) { if (arr.indexOf(inp.getAttribute('data-oid')) < 0) arr.push(inp.getAttribute('data-oid')); }
+    else arr = arr.filter(function (x) { return x !== inp.getAttribute('data-oid'); });
+    picked[qid] = arr;
+  } else {
+    picked[qid] = inp.checked ? [inp.getAttribute('data-oid')] : [];
+  }
+});
+
+function demoConflict() {
+  function pick(oid, qid) {
+    document.querySelector('input[data-oid="' + oid + '"]').checked = true;
+    picked[qid] = [oid];
+  }
+  pick('O-SHARE-Y', 'Q1');
+  pick('O-REMIND-PUSH', 'R1');
+  pick('O-ONLY-SELF', 'R2');
+  picked['X1'] = ['O-NO-ACCOUNT'];
+  document.querySelector('input[data-oid="O-NO-ACCOUNT"]').checked = true;
+  // 不勾任何板块：制造"未选板块"错误
+  build();
+}
+
+function validate() {
+  var errs = [];
+  var anyBlock = MODEL.blocks.some(function (b) { return blockChecked[b.id]; });
+  if (!anyBlock) errs.push('【未选板块】至少勾选一个板块才能生成答案');
+
+  MODEL.questions.forEach(function (q) {
+    if (q.required && !(picked[q.qid] || []).length) errs.push('【未答必答】' + q.title);
+  });
+  var all = [];
+  MODEL.questions.forEach(function (q) { all = all.concat(picked[q.qid] || []); });
+  MODEL.questions.forEach(function (q) {
+    q.options.forEach(function (o) {
+      if ((picked[q.qid] || []).indexOf(o.oid) < 0) return;
+      (o.conflicts || []).forEach(function (c) {
+        if (all.indexOf(c) >= 0) errs.push('【冲突】' + o.label + ' 与 ' + (NAME[c] || c) + ' 不能同时选');
+      });
+      (o.requires || []).forEach(function (r) {
+        if (all.indexOf(r) < 0) errs.push('【缺依赖】选「' + o.label + '」必须先选「' + (NAME[r] || r) + '」');
+      });
+    });
+  });
+  Object.keys(funcChecked).forEach(function (fid) {
+    if (!funcChecked[fid]) return;
+    var f = MODEL.funcs.find(function (x) { return x.id === fid; });
+    if (!f) { errs.push('【未知功能】' + fid + ' 不在模型里'); return; }
+    if (f.status === '不做') errs.push('【已排除】' + f.id + ' 是"不做"项，不能选');
+    if (!blockChecked[f.block]) errs.push('【板块未勾】' + f.id + ' 所在的板块「' + f.block + '」未勾选');
+  });
+  return errs;
+}
+
+function build() {
+  var errs = validate();
+  var box = document.getElementById('err'), list = document.getElementById('errlist');
+  var out = document.getElementById('out'), hint = document.getElementById('hint');
+  if (errs.length) {
+    list.innerHTML = '';
+    errs.forEach(function (e) { var li = document.createElement('li'); text(li, e); list.append(li); });
+    box.style.display = 'block';
+    out.style.display = 'none';
+    hint.textContent = '已阻断：先解决上面 ' + errs.length + ' 条。';
+    return;
+  }
+  box.style.display = 'none';
+
+  var lines = ['【产品】' + MODEL.meta.product + '　【品类代码】' + MODEL.meta.category, ''];
+  var mat = document.getElementById('material');
+  var matLines = [];
+  if (mat.value.trim()) matLines.push(mat.value.trim());
+  var q0Names = attachNames('Q0');
+  if (q0Names.length) matLines.push('附件：' + q0Names.join('、'));
+  if (matLines.length) {
+    lines.push('【已有材料】');
+    matLines.forEach(function (x) { lines.push(x); });
+    lines.push('');
+  }
+
+  lines.push('【功能】');
+  /* v4.52：按板块分段，原有功能行文本/组内顺序不变；「其他功能 / 附件」只在该板块段末尾追加，空则省略 */
+  MODEL.blocks.forEach(function (b) {
+    Object.keys(funcChecked).forEach(function (fid) {
+      if (!funcChecked[fid]) return;
+      var f = MODEL.funcs.find(function (x) { return x.id === fid; });
+      if (!f || f.block !== b.id) return;
+      var src = f.source, sta = f.status;
+      if (f.status === '待确认') { src = '主理人确认'; sta = '必做'; }
+      lines.push('· ' + f.id + '｜' + f.name + '｜来源：' + src + '｜状态：' + sta);
+    });
+    var ta = document.querySelector('textarea[data-other="' + b.id + '"]');
+    var txt = ta ? ta.value.trim() : '';
+    if (txt) lines.push('其他功能：' + txt);
+    var fnames = attachNames(b.id);
+    if (fnames.length) lines.push('附件：' + fnames.join('、'));
+  });
+
+  lines.push('', '【答案】');
+  MODEL.questions.forEach(function (q) {
+    (picked[q.qid] || []).forEach(function (oid) {
+      lines.push('· ' + q.qid + '｜' + oid + '｜' + NAME[oid]);
+    });
+  });
+
+  var ob = document.getElementById('otherBlock').value.trim();
+  var of = document.getElementById('otherFn').value.trim();
+  if (ob) lines.push('· 其他板块（自填，来源：主理人确认）：' + ob);
+  if (of) lines.push('· 其他功能（自填，来源：主理人确认）：' + of);
+
+  lines.push('', '【校验】通过');
+  out.style.display = 'block';
+  out.value = lines.join('\n');
+  hint.textContent = '已生成，按「复制」带走。';
+}
+
+function copyOut() {
+  var out = document.getElementById('out');
+  if (out.style.display === 'none') build();
+  if (out.style.display === 'none') return;
+  out.select();
+  try { document.execCommand('copy'); document.getElementById('hint').textContent = '已复制。'; }
+  catch (e) { document.getElementById('hint').textContent = '复制失败，请手动 Ctrl+C。'; }
+}
+
+document.getElementById('q0File').addEventListener('change', function () {
+  addAttachments('Q0', this.files); this.value = '';
+});
+renderAttachList('Q0');
+render();
+</script>
+</body>
+</html>
